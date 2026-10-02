@@ -1,0 +1,20 @@
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies / build output
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+
+# Secrets — never track these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Exception: the bundled update-checker library needs its own vendor/ folder
+!lib/plugin-update-checker/vendor/

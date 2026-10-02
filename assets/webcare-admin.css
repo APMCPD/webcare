@@ -1,0 +1,36 @@
+/* Webcare - loaded only on the Webcare page and the Dashboard. */
+.webcare-wrap .webcare-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 8px 20px 16px;
+    margin: 20px 0;
+    max-width: 800px;
+}
+.webcare-wrap .webcare-card h2 {
+    margin-top: 12px;
+}
+.webcare-wrap .webcare-list {
+    list-style: disc;
+    margin-left: 20px;
+}
+.webcare-wrap .webcare-field {
+    margin: 0 0 16px;
+}
+.webcare-wrap .webcare-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.webcare-wrap .webcare-field input[type="text"],
+.webcare-wrap .webcare-field input[type="email"],
+.webcare-wrap .webcare-field textarea,
+.webcare-wrap .webcare-field select {
+    width: 100%;
+    max-width: 600px;
+}
+.webcare-wrap .webcare-help {
+    color: #646970;
+    font-size: 13px;
+}
