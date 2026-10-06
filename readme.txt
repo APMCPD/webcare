@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,18 +23,20 @@ The plugin has no settings stored in the database. It keeps a one-minute "please
 == Installation ==
 
 1. Upload the `webcare` folder to `/wp-content/plugins/` (or install the zip from a GitHub release) and activate it.
-2. Open `wp-config.php` and add this line above the "That's all, stop editing!" comment, using our real support mailbox address:
+2. Visit the Webcare menu in the WordPress admin to check it looks right.
 
-`define( 'WEBCARE_SUPPORT_EMAIL', 'webcare@example.com' );`
+No setup is needed. Support emails go to webcare@apmcpd.co.uk by default.
 
-3. Visit the Webcare menu in the WordPress admin to check it looks right.
+Optional: to send one site's requests to a different address, add this line to `wp-config.php` above the "That's all, stop editing!" comment:
 
-Until that line is added, the request form stays switched off and clients see "Online requests aren't set up yet". Administrators also see instructions on how to fix it. The plugin never falls back to the site's admin email.
+`define( 'WEBCARE_SUPPORT_EMAIL', 'someone@example.com' );`
+
+If that address is invalid it is ignored (and noted in the PHP error log) and the default is used. The plugin never falls back to the site's admin email. If the built-in address were ever invalid, the request form would switch off and clients would see "Online requests aren't set up yet".
 
 == How to edit the Your service text ==
 
 1. Open `includes/config.php` and find the function `webcare_service_info()` (it is marked "EDIT THIS").
-2. Change the wording (what's included, response times, the "Something bigger in mind?" note, phone number, ownership promises). Anything left empty is simply not shown.
+2. Change the wording (what's included, response times, the "Something bigger in mind?" note, phone number, ownership promises). Anything left empty is simply not shown. Edit `response_times` and `response_short` together so the page and the confirmation email stay consistent.
 3. Save, then release an update (see below) so every client site gets the new text.
 
 == Releasing an update ==
@@ -52,6 +54,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.0.2 =
+* Support emails go to webcare@apmcpd.co.uk by default (wp-config setting now optional); safer service wording.
 
 = 1.0.1 =
 * Final service wording for APM Webcare; health check described as quarterly.

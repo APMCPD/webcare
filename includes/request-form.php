@@ -59,7 +59,7 @@ function webcare_render_request_form() {
         echo '<p>' . esc_html__( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) . '</p>';
         if ( current_user_can( 'manage_options' ) ) {
             echo '<div class="notice notice-warning inline"><p>'
-                . esc_html__( 'Administrator note: to switch the form on, add this line to wp-config.php (above the "That\'s all, stop editing" line):', 'webcare' )
+                . esc_html__( 'Administrator note: the support address is built into the plugin, so this should not normally appear - the built-in address appears to be invalid, so please contact APM. Adding the line below to wp-config.php (above the "That\'s all, stop editing" line) is an optional override that can also switch the form on:', 'webcare' )
                 . '</p><p><code>' . esc_html( "define( 'WEBCARE_SUPPORT_EMAIL', 'webcare@example.com' );" ) . '</code></p></div>';
         }
         return;

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare
  * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,7 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.0.2 - Support emails go to webcare@apmcpd.co.uk by default (wp-config setting now optional); safer service wording.
  * 1.0.1 - Final service wording for APM Webcare; health check described as quarterly.
  * 1.0.0 - Initial release. Webcare page and dashboard widget, "Request a change" form
  *         (emails our support mailbox and confirms to the client), "Your service"
@@ -28,7 +29,11 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.0.1' );
+define( 'WEBCARE_VERSION', '1.0.2' );
+
+// Where change requests are emailed by default. A single site can override this by adding
+// define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
+define( 'WEBCARE_DEFAULT_SUPPORT_EMAIL', 'webcare@apmcpd.co.uk' );
 define( 'WEBCARE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WEBCARE_URL', plugin_dir_url( __FILE__ ) );
 
