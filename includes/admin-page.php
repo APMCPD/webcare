@@ -103,7 +103,7 @@ function webcare_render_page() {
 
 // Kept as its own function so a later version can swap in real health checks.
 function webcare_render_health_section() {
-    echo '<p>' . esc_html__( 'Your first website health check is coming soon. We\'ll check your site regularly and show the results here.', 'webcare' ) . '</p>';
+    echo '<p>' . esc_html__( 'Your first quarterly website health check is coming soon. Every quarter we check your site\'s speed, security and search-engine setup, and we\'ll show a plain-English summary here.', 'webcare' ) . '</p>';
 }
 
 function webcare_render_service_section() {
@@ -118,7 +118,6 @@ function webcare_render_service_section() {
 
     $lists = [
         [ 'included_title', 'included' ],
-        [ 'quoted_title', 'quoted' ],
     ];
     foreach ( $lists as $pair ) {
         $items = $get( $pair[1] );
@@ -140,6 +139,13 @@ function webcare_render_service_section() {
     if ( $get( 'response_times' ) ) {
         echo '<h3>' . esc_html__( 'Response times', 'webcare' ) . '</h3>';
         echo '<p>' . esc_html( $get( 'response_times' ) ) . '</p>';
+    }
+
+    if ( $get( 'bigger' ) ) {
+        if ( $get( 'bigger_title' ) ) {
+            echo '<h3>' . esc_html( $get( 'bigger_title' ) ) . '</h3>';
+        }
+        echo '<p>' . esc_html( $get( 'bigger' ) ) . '</p>';
     }
 
     if ( $get( 'email' ) || $get( 'phone' ) ) {

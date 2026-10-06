@@ -251,11 +251,11 @@ function webcare_handle_request() {
 
     // --- Confirmation to the client (a failure here is logged, not shown) ---
     $info     = webcare_service_info();
-    $response = isset( $info['response_times'] ) ? (string) $info['response_times'] : '';
+    $response = isset( $info['response_short'] ) ? (string) $info['response_short'] : '';
 
     $confirm  = "Thanks — we've received your request and will reply to " . $email . ".\n";
     if ( '' !== $response ) {
-        $confirm .= 'Our usual response time: ' . $response . "\n";
+        $confirm .= $response . "\n";
     }
     $confirm .= "\nHere's a copy of what you asked for:\n\n";
     $confirm .= 'Page: ' . ( '' !== $page ? $page : '(not given)' ) . "\n";

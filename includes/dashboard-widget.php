@@ -14,7 +14,7 @@ function webcare_register_dashboard_widget() {
 function webcare_render_dashboard_widget() {
     $support = webcare_get_support_email();
 
-    echo '<p>' . esc_html__( 'Website health checks are coming soon.', 'webcare' ) . '</p>';
+    echo '<p>' . esc_html__( 'Your first quarterly health check is coming soon.', 'webcare' ) . '</p>';
     echo '<p><a class="button button-primary" href="' . esc_url( admin_url( 'admin.php?page=webcare#webcare-request' ) ) . '">' . esc_html__( 'Request a change', 'webcare' ) . '</a></p>';
 
     if ( $support ) {
