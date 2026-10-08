@@ -25,6 +25,12 @@ function webcare_event_types() {
     return [ 'phone', 'email', 'booking', 'form' ];
 }
 
+// Everything the public address accepts: the four enquiry actions plus a page view.
+// ('pageview' is handled by visit-tracking.php and is never stored as an enquiry total.)
+function webcare_rest_event_types() {
+    return array_merge( webcare_event_types(), [ 'pageview' ] );
+}
+
 // Sites that count as "online booking" links. A visitor's click on a link to any of these
 // (or their sub-sites, e.g. myclinic.cliniko.com) is counted as a booking click.
 function webcare_default_booking_hosts() {
@@ -344,26 +350,47 @@ function webcare_window_limit_reached( $key, $max, $window ) {
     return false;
 }
 
-// Site-wide brake: at most 300 counted events per hour across ALL visitors. Even if someone
-// fakes their address to dodge the per-visitor limit, the totals and the number of temporary
-// database rows stay bounded. Returns true if the site is over its limit (and adds a hit if not).
-function webcare_over_site_limit() {
-    return webcare_window_limit_reached( 'webcare_rl_site', 300, HOUR_IN_SECONDS );
+// The limits for each kind of event. Enquiry actions and page views have SEPARATE allowances,
+// so a busy day of page views can never use up the enquiry allowance, or the other way round.
+//   visitor_prefix / visitor_max - per visitor, per 10 minutes
+//   site_key / site_max          - across the whole site, per hour
+function webcare_limits_for( $type ) {
+    if ( 'pageview' === $type ) {
+        return [
+            'visitor_prefix' => 'webcare_rv_',
+            'visitor_max'    => 120,
+            'site_key'       => 'webcare_rv_site',
+            'site_max'       => 5000,
+        ];
+    }
+    return [
+        'visitor_prefix' => 'webcare_rl_',
+        'visitor_max'    => 30,
+        'site_key'       => 'webcare_rl_site',
+        'site_max'       => 300,
+    ];
 }
 
-// Read-only look at the site-wide brake: true if this hour's 300 are already used up. Checked
+// Site-wide brake (enquiries by default: at most 300 counted events per hour across ALL visitors).
+// Even if someone fakes their address to dodge the per-visitor limit, the totals and the number of
+// temporary database rows stay bounded. Returns true if the site is over its limit (and adds a hit if not).
+function webcare_over_site_limit( $key = 'webcare_rl_site', $max = 300 ) {
+    return webcare_window_limit_reached( $key, $max, HOUR_IN_SECONDS );
+}
+
+// Read-only look at a site-wide brake: true if this hour's allowance is already used up. Checked
 // before anything else is written, so a flood creates no new temporary rows once the cap is hit.
-function webcare_site_limit_full() {
-    $state = get_transient( 'webcare_rl_site' );
+function webcare_site_limit_full( $key = 'webcare_rl_site', $max = 300 ) {
+    $state = get_transient( $key );
     return is_array( $state ) && isset( $state['n'], $state['t'] )
         && ( time() - (int) $state['t'] ) < HOUR_IN_SECONDS
-        && (int) $state['n'] >= 300;
+        && (int) $state['n'] >= $max;
 }
 
-// Per-visitor brake: at most 30 counted events per visitor per 10 minutes. Returns true if this
-// visitor is over the limit (and should not be counted).
-function webcare_over_rate_limit( $visitor_hash ) {
-    return webcare_window_limit_reached( 'webcare_rl_' . $visitor_hash, 30, 10 * MINUTE_IN_SECONDS );
+// Per-visitor brake (enquiries by default: at most 30 counted events per visitor per 10 minutes).
+// Returns true if this visitor is over the limit (and should not be counted).
+function webcare_over_rate_limit( $visitor_hash, $prefix = 'webcare_rl_', $max = 30 ) {
+    return webcare_window_limit_reached( $prefix . $visitor_hash, $max, 10 * MINUTE_IN_SECONDS );
 }
 
 /* ------------------------------------------------------------------
@@ -376,7 +403,10 @@ function webcare_enqueue_tracking() {
         if ( is_admin() || is_feed() || is_customize_preview() || is_preview() ) {
             return;
         }
-        if ( ! webcare_tracking_enabled() ) {
+        // The script is needed if either kind of counting is on.
+        $clicks = webcare_tracking_enabled();
+        $visits = function_exists( 'webcare_visits_enabled' ) && webcare_visits_enabled();
+        if ( ! $clicks && ! $visits ) {
             return;
         }
         // Divi's visual builder and its preview windows.
@@ -388,19 +418,40 @@ function webcare_enqueue_tracking() {
             return;
         }
 
-        webcare_ensure_tracking_started();
+        if ( $clicks ) {
+            webcare_ensure_tracking_started();
+        }
 
         wp_enqueue_script( 'webcare-track', WEBCARE_URL . 'assets/webcare-track.js', [], WEBCARE_VERSION, true );
         if ( function_exists( 'wp_script_add_data' ) ) {
             wp_script_add_data( 'webcare-track', 'strategy', 'defer' ); // Ignored by older WordPress.
         }
+
+        // The page's own path, worked out here on the server, with a code that proves it. The script
+        // sends these back unchanged, so a visitor can't invent page addresses. (Each page is cached
+        // under its own web address, so every cached page carries its own path.) Empty if the path
+        // can't be worked out, in which case the script sends no page view.
+        // Never signed on "page not found" or search-results pages: those can be requested at any
+        // made-up address, and signing them would let someone mint a valid code for a junk path.
+        $page_path = ( $visits && ! is_404() && ! is_search() ) ? webcare_current_request_path() : '';
+        $page_sig  = ( '' !== $page_path ) ? webcare_path_signature( $page_path ) : '';
+
         wp_add_inline_script(
             'webcare-track',
             'window.webcareTrack = ' . wp_json_encode(
                 [
                     'endpoint' => esc_url_raw( rest_url( 'webcare/v1/event' ) ),
                     'booking'  => webcare_booking_rules(),
-                ]
+                    // clicks: count phone/email/booking clicks. visits: count this page view.
+                    // Error pages and search results pages are never counted as page views.
+                    'clicks'   => $clicks,
+                    'visits'   => $visits,
+                    'is404'    => is_404(),
+                    'isSearch' => is_search(),
+                    'path'     => $page_path,
+                    'sig'      => $page_sig,
+                ],
+                JSON_HEX_TAG | JSON_HEX_AMP
             ) . ';',
             'before'
         );
@@ -426,15 +477,33 @@ function webcare_register_event_route() {
                     'type' => [
                         'type'     => 'string',
                         'required' => true,
-                        'enum'     => webcare_event_types(),
+                        'enum'     => webcare_rest_event_types(),
+                    ],
+                    // Only used by page views. Cleaned and checked again on the server.
+                    'path' => [
+                        'type'     => 'string',
+                        'required' => false,
+                    ],
+                    'sig'  => [
+                        'type'     => 'string',
+                        'required' => false,
+                    ],
+                    'ref'  => [
+                        'type'     => 'string',
+                        'required' => false,
+                    ],
+                    'utm'  => [
+                        'type'     => 'string',
+                        'required' => false,
                     ],
                 ],
                 // Visitors are anonymous, so there is nobody to check. We deliberately do NOT use
                 // a nonce either: pages are cached (Breeze, Varnish), so a nonce printed into a
                 // page would be stale by the time a visitor clicks. Instead the request is
-                // limited to our own site, to real browsers, to four fixed event types, to
-                // 30 per visitor per 10 minutes and to 300 per hour for the whole site. The worst a fake request can do is add to
-                // a click total.
+                // limited to our own site, to real browsers, to five fixed event types, and to
+                // set allowances: enquiry clicks 30 per visitor per 10 minutes and 300 per hour for
+                // the whole site; page views (a separate allowance) 120 and 5000. The worst a fake
+                // request can do is add to a total.
                 'permission_callback' => '__return_true',
             ]
         );
@@ -451,11 +520,13 @@ function webcare_rest_event( $request ) {
         $nothing->header( 'Cache-Control', 'no-store' );
 
         $type = $request->get_param( 'type' );
-        if ( ! is_string( $type ) || ! in_array( $type, webcare_event_types(), true ) ) {
+        if ( ! is_string( $type ) || ! in_array( $type, webcare_rest_event_types(), true ) ) {
             return new WP_Error( 'webcare_bad_type', 'Unknown event type.', [ 'status' => 400 ] );
         }
+        $is_view = ( 'pageview' === $type );
 
-        if ( ! webcare_tracking_enabled() ) {
+        // Each kind of counting has its own on/off switch.
+        if ( $is_view ? ! webcare_visits_enabled() : ! webcare_tracking_enabled() ) {
             return $nothing;
         }
         if ( webcare_is_bot_user_agent( $request->get_header( 'user_agent' ) ) ) {
@@ -464,20 +535,50 @@ function webcare_rest_event( $request ) {
         if ( ! webcare_request_is_same_site( $request->get_header( 'origin' ), $request->get_header( 'referer' ) ) ) {
             return $nothing;
         }
+
+        // A page view needs a sensible page address that the website itself vouched for (the code
+        // printed into the page with it); anything else is not from our script.
+        $path = '';
+        if ( $is_view ) {
+            $path = webcare_normalise_path( $request->get_param( 'path' ) );
+            if ( '' === $path || ! webcare_path_signature_valid( $path, $request->get_param( 'sig' ) ) ) {
+                return $nothing;
+            }
+        }
+
         // Order matters. A read-only look at the site cap comes first, so once it's full no new
         // rows are written. Then the per-visitor limit, so one visitor's rejected repeats never
-        // use up the site's allowance and lock out genuine clicks. Only then is a site slot taken.
-        if ( webcare_site_limit_full() ) {
+        // use up the site's allowance and lock out genuine visitors. Only then is a site slot taken.
+        $limits = webcare_limits_for( $type );
+        // When a page view is turned away by one of these limits, a note is kept (once a month) so the
+        // Webcare page can say the visitor figures may be a little low.
+        if ( webcare_site_limit_full( $limits['site_key'], $limits['site_max'] ) ) {
+            if ( $is_view ) {
+                webcare_mark_visits_capped();
+            }
             return $nothing;
         }
-        if ( webcare_over_rate_limit( webcare_visitor_hash() ) ) {
+        // One visitor going over their own limit isn't "heavy traffic", so no note is kept for it.
+        if ( webcare_over_rate_limit( webcare_visitor_hash(), $limits['visitor_prefix'], $limits['visitor_max'] ) ) {
             return $nothing;
         }
-        if ( webcare_over_site_limit() ) {
+        if ( webcare_over_site_limit( $limits['site_key'], $limits['site_max'] ) ) {
+            if ( $is_view ) {
+                webcare_mark_visits_capped();
+            }
             return $nothing;
         }
 
-        webcare_record_event( $type );
+        if ( $is_view ) {
+            webcare_record_pageview(
+                $path,
+                webcare_clean_ref_host( $request->get_param( 'ref' ) ),
+                webcare_device_from_user_agent( $request->get_header( 'user_agent' ) ),
+                webcare_clean_utm( $request->get_param( 'utm' ) )
+            );
+        } else {
+            webcare_record_event( $type );
+        }
         return $nothing;
     } catch ( \Throwable $e ) {
         return new WP_REST_Response( null, 204 );

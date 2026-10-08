@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare
  * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,10 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.3.0 - Website visitor numbers on the Webcare page ("Your website this quarter"): visits, page views,
+ *         most-viewed pages, where visits came from and phone/tablet/desktop share, as anonymous monthly
+ *         totals. No cookies and nothing stored on visitors' devices. Switch off per site with the
+ *         'webcare_track_visits' filter.
  * 1.2.0 - New "Enquiry actions" counts on the Webcare page: anonymous monthly totals of clicks on phone,
  *         email and online-booking links, plus contact form sends (Divi). No cookies, no names or contact details.
  *         "Online booking link" field added to Business details. Switch off per site with the
@@ -36,7 +40,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.2.0' );
+define( 'WEBCARE_VERSION', '1.3.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -55,6 +59,7 @@ require_once WEBCARE_PATH . 'includes/updater.php';
 require_once WEBCARE_PATH . 'includes/schema-output.php';
 require_once WEBCARE_PATH . 'includes/business-details.php';
 require_once WEBCARE_PATH . 'includes/enquiry-tracking.php';
+require_once WEBCARE_PATH . 'includes/visit-tracking.php';
 
 // Menu page + styles. (The Business details submenu runs just after the main menu exists.)
 add_action( 'admin_menu', 'webcare_register_menu' );
@@ -81,6 +86,7 @@ add_action( 'wp_head', 'webcare_output_business_schema', 20 );
 // - The script reports to our own REST address; no cookies, and only totals are kept.
 // - Divi tells us when a contact form was sent (it passes three values, so we ask for 3).
 // - Switch off on one site with: add_filter( 'webcare_track_enquiries', '__return_false' );
+//   (visitor numbers have their own switch: add_filter( 'webcare_track_visits', '__return_false' );)
 add_action( 'wp_enqueue_scripts', 'webcare_enqueue_tracking' );
 add_action( 'rest_api_init', 'webcare_register_event_route' );
 add_action( 'et_pb_contact_form_submit', 'webcare_count_divi_form', 10, 3 );

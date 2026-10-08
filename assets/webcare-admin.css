@@ -92,3 +92,15 @@
     font-size: 16px;
     font-weight: 600;
 }
+
+/* Visitor numbers (main Webcare page). */
+.webcare-wrap .webcare-card h3 {
+    margin: 20px 0 8px;
+}
+.webcare-wrap .webcare-card h4 {
+    margin: 16px 0 6px;
+}
+.webcare-wrap .webcare-top-pages {
+    margin: 0 0 0 20px;
+    list-style: decimal;
+}

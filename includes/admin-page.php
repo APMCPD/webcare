@@ -96,8 +96,8 @@ function webcare_render_page() {
         </div>
 
         <div class="webcare-card" id="webcare-enquiries">
-            <h2><?php echo esc_html__( 'Enquiry actions this quarter', 'webcare' ); ?></h2>
-            <?php webcare_render_enquiry_section(); ?>
+            <h2><?php echo esc_html__( 'Your website this quarter', 'webcare' ); ?></h2>
+            <?php webcare_render_activity_section(); ?>
         </div>
 
         <div class="webcare-card">
@@ -144,23 +144,183 @@ function webcare_quarter_label( $info ) {
     );
 }
 
-// Is Independent Analytics (the free visitor-numbers plugin we install) running?
-function webcare_independent_analytics_active() {
-    if ( defined( 'IAWP_VERSION' ) || class_exists( 'IAWP\\Plugin', false ) ) {
-        return true;
-    }
-    return function_exists( 'is_plugin_active' ) && is_plugin_active( 'independent-analytics/iawp.php' );
+// The day enquiry counting began, as "2026-08-20" ('' if not known yet).
+function webcare_tracking_started_date() {
+    webcare_ensure_tracking_started();
+    $started = get_option( 'webcare_tracking_started', '' );
+    return ( is_string( $started ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $started ) ) ? $started : '';
 }
 
-function webcare_render_enquiry_section() {
-    if ( ! function_exists( 'webcare_tracking_enabled' ) || ! webcare_tracking_enabled() ) {
-        echo '<p>' . esc_html__( 'Enquiry tracking is switched off on this website.', 'webcare' ) . '</p>';
+// The day the first page view was recorded, as "2026-08-20" ('' if none yet). Page views are
+// dated separately from enquiries because they were added later.
+function webcare_visits_started_date() {
+    $started = get_option( 'webcare_visits_started', '' );
+    return ( is_string( $started ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $started ) ) ? $started : '';
+}
+
+// A "2026-08-20" date written the way the site's settings show dates ('' if not given).
+function webcare_date_text( $date ) {
+    if ( '' !== $date && function_exists( 'mysql2date' ) ) {
+        return (string) mysql2date( get_option( 'date_format' ), $date . ' 00:00:00' );
+    }
+    return $date;
+}
+
+// The enquiry start day, written out.
+function webcare_tracking_since_text() {
+    return webcare_date_text( webcare_tracking_started_date() );
+}
+
+// A stored page address made readable for people ("/caf%C3%A9" shows as "/café"). Still escaped
+// by the caller. If it isn't valid text once decoded, the original address is shown instead.
+function webcare_readable_path( $path ) {
+    $path    = (string) $path;
+    $decoded = wp_check_invalid_utf8( rawurldecode( $path ) );
+    return ( '' !== $decoded ) ? $decoded : $path;
+}
+
+// A whole number as a percentage of a total, e.g. 62.
+function webcare_percent( $part, $total ) {
+    return ( $total > 0 ) ? (int) round( ( $part / $total ) * 100 ) : 0;
+}
+
+// One card, two parts: visitor numbers, then enquiry actions, then a single privacy note.
+function webcare_render_activity_section() {
+    $visits_on = function_exists( 'webcare_visits_enabled' ) && webcare_visits_enabled();
+    $clicks_on = function_exists( 'webcare_tracking_enabled' ) && webcare_tracking_enabled();
+
+    if ( ! $visits_on && ! $clicks_on ) {
+        echo '<p>' . esc_html__( 'Visitor and enquiry tracking is switched off on this website.', 'webcare' ) . '</p>';
         return;
     }
 
-    webcare_ensure_tracking_started();
-    $started = get_option( 'webcare_tracking_started', '' );
-    $started = ( is_string( $started ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2}$/', $started ) ) ? $started : '';
+    if ( $visits_on ) {
+        webcare_render_visitor_section();
+    }
+    if ( $clicks_on ) {
+        webcare_render_enquiry_section();
+    }
+
+    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'These figures are anonymous totals. No cookies and nothing stored on visitors\' devices; no names or contact details. We keep monthly totals and a list of your most-viewed page addresses. To limit spam, a one-way scrambled code based on the visitor\'s connection is kept briefly (normally 10 minutes) and then deleted. If your privacy statement lists what you measure, you may like to add: "anonymous counts of visits and page views, and of clicks on phone, email and booking links".', 'webcare' ) . '</p>';
+}
+
+// Part one: visitors.
+function webcare_render_visitor_section() {
+    // Page views have their own start day. Until the first one is recorded there is no date, so last
+    // quarter only shows figures if there happen to be some.
+    $started       = webcare_visits_started_date();
+    $this_info     = webcare_quarter_info( 0 );
+    $last_info     = webcare_quarter_info( -1 );
+    $this_v        = webcare_get_quarter_visits( 0 );
+    $last_v        = webcare_get_quarter_visits( -1 );
+    $started_month = ( '' !== $started ) ? str_replace( '-', '_', substr( $started, 0, 7 ) ) : '';
+    if ( '' !== $started_month ) {
+        $last_none = ( $last_info['to_month'] < $started_month );
+    } else {
+        $last_none = ( $last_v['views'] < 1 && $last_v['visits'] < 1 );
+    }
+
+    echo '<h3>' . esc_html__( 'Visitors', 'webcare' ) . '</h3>';
+    ?>
+    <table class="webcare-stats">
+        <thead>
+            <tr>
+                <th scope="col"><span class="screen-reader-text"><?php echo esc_html__( 'Measure', 'webcare' ); ?></span></th>
+                <th scope="col"><?php echo esc_html( sprintf( /* translators: %s: quarter such as "Oct to Dec 2026" */ __( 'This quarter (%s)', 'webcare' ), webcare_quarter_label( $this_info ) ) ); ?></th>
+                <th scope="col"><?php echo esc_html( sprintf( /* translators: %s: quarter such as "Jul to Sep 2026" */ __( 'Last quarter (%s)', 'webcare' ), webcare_quarter_label( $last_info ) ) ); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row"><?php echo esc_html__( 'Visits', 'webcare' ); ?></th>
+                <td><?php echo esc_html( number_format_i18n( $this_v['visits'] ) ); ?></td>
+                <td><?php echo $last_none ? '&mdash;' : esc_html( number_format_i18n( $last_v['visits'] ) ); ?></td>
+            </tr>
+            <tr>
+                <th scope="row"><?php echo esc_html__( 'Page views', 'webcare' ); ?></th>
+                <td><?php echo esc_html( number_format_i18n( $this_v['views'] ) ); ?></td>
+                <td><?php echo $last_none ? '&mdash;' : esc_html( number_format_i18n( $last_v['views'] ) ); ?></td>
+            </tr>
+        </tbody>
+    </table>
+    <?php
+    if ( $this_v['visits'] < 1 && $this_v['views'] < 1 ) {
+        echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
+    } else {
+        // Most-viewed pages (the address is shown as plain text).
+        echo '<h4>' . esc_html__( 'Most-viewed pages this quarter', 'webcare' ) . '</h4>';
+        $top = array_slice( $this_v['pages'], 0, 5, true );
+        if ( empty( $top ) ) {
+            echo '<p class="webcare-help">' . esc_html__( 'No pages recorded yet.', 'webcare' ) . '</p>';
+        } else {
+            echo '<ol class="webcare-top-pages">';
+            foreach ( $top as $path => $views ) {
+                echo '<li><code>' . esc_html( webcare_readable_path( $path ) ) . '</code> &ndash; ' . esc_html(
+                    sprintf(
+                        /* translators: %s: number of page views */
+                        _n( '%s view', '%s views', (int) $views, 'webcare' ),
+                        number_format_i18n( (int) $views )
+                    )
+                ) . '</li>';
+            }
+            echo '</ol>';
+        }
+
+        // Where visits came from, as a share of all visits.
+        $source_labels = [
+            'search' => __( 'Search engines', 'webcare' ),
+            'ai'     => __( 'AI assistants', 'webcare' ),
+            'social' => __( 'Social media', 'webcare' ),
+            'other'  => __( 'Other websites', 'webcare' ),
+            'direct' => __( 'Typed in or bookmarked', 'webcare' ),
+        ];
+        $source_total = array_sum( $this_v['sources'] );
+        echo '<h4>' . esc_html__( 'Where visits came from', 'webcare' ) . '</h4>';
+        if ( $source_total < 1 ) {
+            echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
+        } else {
+            echo '<ul class="webcare-list">';
+            foreach ( $source_labels as $key => $label ) {
+                echo '<li>' . esc_html( $label ) . ': ' . esc_html( number_format_i18n( $this_v['sources'][ $key ] ) ) . ' (' . esc_html( (string) webcare_percent( $this_v['sources'][ $key ], $source_total ) ) . '%)</li>';
+            }
+            echo '</ul>';
+        }
+
+        // Which kind of device (counted once per visit).
+        $device_labels = [
+            'mobile'  => __( 'Mobile', 'webcare' ),
+            'tablet'  => __( 'Tablet', 'webcare' ),
+            'desktop' => __( 'Desktop', 'webcare' ),
+        ];
+        $device_total = array_sum( $this_v['devices'] );
+        echo '<h4>' . esc_html__( 'Devices', 'webcare' ) . '</h4>';
+        if ( $device_total < 1 ) {
+            echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
+        } else {
+            $parts = [];
+            foreach ( $device_labels as $key => $label ) {
+                $parts[] = $label . ' ' . webcare_percent( $this_v['devices'][ $key ], $device_total ) . '%';
+            }
+            echo '<p>' . esc_html( implode( ' · ', $parts ) ) . '</p>';
+        }
+    }
+
+    if ( ! empty( $this_v['capped'] ) ) {
+        echo '<p class="webcare-help">' . esc_html__( 'Some visits this quarter weren\'t counted because of unusually heavy traffic (spam protection).', 'webcare' ) . '</p>';
+    }
+
+    $since = webcare_date_text( $started );
+    $note  = __( 'Visits are counted when someone arrives from outside your website; they aren\'t a count of unique people.', 'webcare' );
+    if ( '' !== $since ) {
+        /* translators: 1: date counting began, 2: explanation of visits */
+        $note = sprintf( __( 'Counted since tracking started on %1$s. %2$s', 'webcare' ), $since, $note );
+    }
+    echo '<p class="webcare-help">' . esc_html( $note ) . '</p>';
+}
+
+// Part two: enquiry actions.
+function webcare_render_enquiry_section() {
+    $started = webcare_tracking_started_date();
 
     $this_info = webcare_quarter_info( 0 );
     $last_info = webcare_quarter_info( -1 );
@@ -170,6 +330,8 @@ function webcare_render_enquiry_section() {
     // A quarter that ended before counting began has nothing to show.
     $started_month    = ( '' !== $started ) ? str_replace( '-', '_', substr( $started, 0, 7 ) ) : '';
     $last_not_tracked = ( '' !== $started_month && $last_info['to_month'] < $started_month );
+
+    echo '<h3>' . esc_html__( 'Enquiry actions', 'webcare' ) . '</h3>';
 
     $rows = [
         'phone'   => __( 'Phone number clicks', 'webcare' ),
@@ -197,10 +359,7 @@ function webcare_render_enquiry_section() {
         </tbody>
     </table>
     <?php
-    $since = $started;
-    if ( '' !== $started && function_exists( 'mysql2date' ) ) {
-        $since = mysql2date( get_option( 'date_format' ), $started . ' 00:00:00' );
-    }
+    $since = webcare_tracking_since_text();
     if ( '' !== $since ) {
         echo '<p class="webcare-help">' . esc_html(
             sprintf(
@@ -213,15 +372,6 @@ function webcare_render_enquiry_section() {
         echo '<p class="webcare-help">' . esc_html__( 'Clicks show interest — a booking click isn\'t a confirmed appointment.', 'webcare' ) . '</p>';
     }
 
-    echo '<p>';
-    if ( webcare_independent_analytics_active() ) {
-        echo esc_html__( 'Visitor numbers are recorded by Independent Analytics — see Dashboard → Analytics', 'webcare' );
-    } else {
-        echo esc_html__( 'Visitor numbers: not set up yet — ask APM', 'webcare' );
-    }
-    echo '</p>';
-
-    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'These figures are anonymous totals. No cookies, no names or contact details, and no record of which pages people visit. To stop spam, a temporary scrambled code based on the visitor\'s connection is set to expire after 10 minutes. If your privacy statement lists what you measure, you may like to add: "anonymous counts of clicks on phone, email and booking links".', 'webcare' ) . '</p>';
 }
 
 function webcare_render_service_section() {
