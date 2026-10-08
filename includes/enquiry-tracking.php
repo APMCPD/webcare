@@ -31,6 +31,8 @@ function webcare_default_booking_hosts() {
     return [
         'cliniko.com',
         'janeapp.com',
+        'janeapp.co.uk',  // Jane's UK sites, e.g. myclinic.janeapp.co.uk
+        'janeapp.com.au',
         'as.me',
         'acuityscheduling.com',
         'calendly.com',

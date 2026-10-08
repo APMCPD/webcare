@@ -63,6 +63,12 @@
         if (host === '' || !bookingRules || !bookingRules.length) {
             return '';
         }
+        // Patient sign-in links ("…janeapp.co.uk/login") are for managing existing bookings,
+        // not making a new one, so they aren't counted as booking clicks.
+        var firstPart = String(pathname || '').toLowerCase().replace(/^\/+/, '').split('/')[0];
+        if (firstPart === 'login' || firstPart === 'signin' || firstPart === 'sign_in' || firstPart === 'account' || firstPart === 'my-account') {
+            return '';
+        }
         for (var i = 0; i < bookingRules.length; i++) {
             if (typeof bookingRules[i] === 'string' && matchesBookingRule(host, pathname, bookingRules[i])) {
                 return 'booking';
