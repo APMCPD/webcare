@@ -25,6 +25,8 @@
 }
 .webcare-wrap .webcare-field input[type="text"],
 .webcare-wrap .webcare-field input[type="email"],
+.webcare-wrap .webcare-field input[type="tel"],
+.webcare-wrap .webcare-field input[type="number"],
 .webcare-wrap .webcare-field textarea,
 .webcare-wrap .webcare-field select {
     width: 100%;
@@ -33,4 +35,39 @@
 .webcare-wrap .webcare-help {
     color: #646970;
     font-size: 13px;
+}
+.webcare-wrap .webcare-field .webcare-help {
+    display: block;
+    margin-top: 4px;
+}
+
+/* Opening hours grid (Business details page). */
+.webcare-wrap .webcare-hours {
+    border-collapse: collapse;
+    width: 100%;
+}
+.webcare-wrap .webcare-hours th,
+.webcare-wrap .webcare-hours td {
+    padding: 6px 8px 6px 0;
+    text-align: left;
+    vertical-align: middle;
+}
+.webcare-wrap .webcare-hours thead th {
+    font-size: 13px;
+    font-weight: 600;
+}
+.webcare-wrap .webcare-hours tbody th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+.webcare-wrap .webcare-hours input[type="time"] {
+    width: 110px;
+}
+.webcare-wrap .webcare-hours input[type="checkbox"] {
+    margin: 0;
+}
+@media (max-width: 782px) {
+    .webcare-wrap .webcare-hours input[type="time"] {
+        width: 90px;
+    }
 }

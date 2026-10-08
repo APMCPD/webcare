@@ -128,9 +128,10 @@ function webcare_render_request_form() {
  * Form handler (admin_post_webcare_request - logged-in users only)
  * ---------------------------------------------------------------- */
 
-// Always ends with a redirect back to the Webcare page, so refreshing never resends.
-function webcare_redirect( $msg ) {
-    wp_safe_redirect( add_query_arg( 'webcare_msg', $msg, admin_url( 'admin.php?page=webcare' ) ) );
+// Always ends with a redirect back to a Webcare page (the main one unless told otherwise),
+// so refreshing never resends.
+function webcare_redirect( $msg, $page = 'webcare' ) {
+    wp_safe_redirect( add_query_arg( 'webcare_msg', $msg, admin_url( 'admin.php?page=' . rawurlencode( $page ) ) ) );
     exit;
 }
 

@@ -17,6 +17,8 @@ function webcare_render_dashboard_widget() {
     echo '<p>' . esc_html__( 'Your first quarterly health check is coming soon.', 'webcare' ) . '</p>';
     echo '<p><a class="button button-primary" href="' . esc_url( admin_url( 'admin.php?page=webcare#webcare-request' ) ) . '">' . esc_html__( 'Request a change', 'webcare' ) . '</a></p>';
 
+    echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=webcare-business' ) ) . '">' . esc_html__( 'Help Google & AI find you — check your business details', 'webcare' ) . '</a></p>';
+
     if ( $support ) {
         echo '<p>' . esc_html__( 'Or email us:', 'webcare' ) . ' <a href="' . esc_url( 'mailto:' . $support ) . '">' . esc_html( $support ) . '</a></p>';
     }

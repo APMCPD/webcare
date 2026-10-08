@@ -21,7 +21,9 @@ function webcare_register_menu() {
 
 // Load the stylesheet only on the Webcare page and the Dashboard.
 function webcare_enqueue_assets( $hook ) {
-    if ( 'toplevel_page_webcare' !== $hook && 'index.php' !== $hook ) {
+    $business_hook = function_exists( 'webcare_business_hook_suffix' ) ? webcare_business_hook_suffix() : '';
+    $is_business   = ( '' !== $business_hook && $business_hook === $hook );
+    if ( 'toplevel_page_webcare' !== $hook && 'index.php' !== $hook && ! $is_business ) {
         return;
     }
     if ( ! current_user_can( WEBCARE_CAPABILITY ) ) {
@@ -42,6 +44,10 @@ function webcare_messages() {
         'invalid'      => [ 'error', __( 'Please check the form — your name, a valid email address and a description of the change are all needed.', 'webcare' ) ],
         'too_long'     => [ 'error', __( 'Sorry, something you typed was too long. Please shorten it and try again.', 'webcare' ) ],
         'rate_limited' => [ 'error', __( 'Please wait a minute before sending another request.', 'webcare' ) ],
+        'business_saved'       => [ 'success', __( 'Thanks — your business details have been saved. Changes can take a few minutes to appear because of page caching.', 'webcare' ) ],
+        'business_saved_hours' => [ 'warning', __( 'Your business details have been saved, but some opening times were not valid (or closing was not after opening) and have been left out. Please check the opening hours below.', 'webcare' ) ],
+        'business_saved_blank_days' => [ 'warning', __( 'Saved — note: days left blank will be shown to Google as closed.', 'webcare' ) ],
+        'business_invalid'     => [ 'error', __( 'Nothing was saved. Please check the business type and email address, then try again.', 'webcare' ) ],
         'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) ],
         'send_failed'  => [
             'error',
@@ -86,6 +92,12 @@ function webcare_render_page() {
         <div class="webcare-card">
             <h2><?php echo esc_html__( 'Website health', 'webcare' ); ?></h2>
             <?php webcare_render_health_section(); ?>
+        </div>
+
+        <div class="webcare-card">
+            <h2><?php echo esc_html__( 'Business details for Google & AI', 'webcare' ); ?></h2>
+            <p><?php echo esc_html__( 'Help Google & AI find you — check your business details.', 'webcare' ); ?></p>
+            <p><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=webcare-business' ) ); ?>"><?php echo esc_html__( 'Check your business details', 'webcare' ); ?></a></p>
         </div>
 
         <div class="webcare-card" id="webcare-request">
