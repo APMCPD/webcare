@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare
  * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,10 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.2.0 - New "Enquiry actions" counts on the Webcare page: anonymous monthly totals of clicks on phone,
+ *         email and online-booking links, plus contact form sends (Divi). No cookies, no names or contact details.
+ *         "Online booking link" field added to Business details. Switch off per site with the
+ *         'webcare_track_enquiries' filter.
  * 1.1.0 - New "Business details" page (Webcare menu): clients enter their phone, address, opening hours
  *         and services once, and Webcare publishes them invisibly for Google and AI assistants
  *         (added to Yoast SEO's own markup, or printed on its own if no SEO plugin is active).
@@ -32,7 +36,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.1.0' );
+define( 'WEBCARE_VERSION', '1.2.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -50,6 +54,7 @@ require_once WEBCARE_PATH . 'includes/request-form.php';
 require_once WEBCARE_PATH . 'includes/updater.php';
 require_once WEBCARE_PATH . 'includes/schema-output.php';
 require_once WEBCARE_PATH . 'includes/business-details.php';
+require_once WEBCARE_PATH . 'includes/enquiry-tracking.php';
 
 // Menu page + styles. (The Business details submenu runs just after the main menu exists.)
 add_action( 'admin_menu', 'webcare_register_menu' );
@@ -70,3 +75,12 @@ add_action( 'admin_post_webcare_business', 'webcare_handle_business' );
 // - Any other SEO plugin (or Yoast Local SEO): we do nothing.
 add_filter( 'wpseo_schema_graph', 'webcare_filter_yoast_graph', 20, 2 );
 add_action( 'wp_head', 'webcare_output_business_schema', 20 );
+
+// Enquiry actions (anonymous totals of phone / email / booking clicks and contact form sends).
+// - The small script is added to public pages only (never admin, builder or logged-in staff).
+// - The script reports to our own REST address; no cookies, and only totals are kept.
+// - Divi tells us when a contact form was sent (it passes three values, so we ask for 3).
+// - Switch off on one site with: add_filter( 'webcare_track_enquiries', '__return_false' );
+add_action( 'wp_enqueue_scripts', 'webcare_enqueue_tracking' );
+add_action( 'rest_api_init', 'webcare_register_event_route' );
+add_action( 'et_pb_contact_form_submit', 'webcare_count_divi_form', 10, 3 );

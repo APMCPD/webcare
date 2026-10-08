@@ -61,10 +61,11 @@ function webcare_biz_clean_session( $opens, $closes ) {
 }
 
 // Turns the raw (already unslashed) form values into the array we store.
-// Returns [ details, valid, hours_dropped, blank_days ].
+// Returns [ details, valid, hours_dropped, blank_days, booking_dropped ].
 //   valid         - false if something needs the user to fix it (bad type or email).
 //   hours_dropped - true if some opening times were invalid and left out.
 //   blank_days    - true if some days are neither ticked Closed nor filled in (while others are).
+//   booking_dropped - true if an "Online booking link" was typed but could not be used.
 function webcare_sanitize_business_details( $raw ) {
     $raw           = is_array( $raw ) ? $raw : [];
     $valid         = true;
@@ -111,6 +112,20 @@ function webcare_sanitize_business_details( $raw ) {
     $details['postcode'] = $plain( 'postcode', 20 );
     $details['country']  = $plain( 'country', 60 );
     $details['price']    = $plain( 'price', 20 );
+
+    // Online booking link (optional). Used only by the enquiry-action counter, never published
+    // in the schema markup. Must be a real http/https address that is not just our own home page.
+    $booking_dropped = false;
+    $booking_typed   = $plain( 'booking_url', 300 );
+    $details['booking_url'] = '';
+    if ( '' !== $booking_typed ) {
+        $booking = esc_url_raw( $booking_typed, [ 'http', 'https' ] );
+        if ( '' !== $booking && '' !== webcare_booking_rule_from_url( $booking ) ) {
+            $details['booking_url'] = $booking;
+        } else {
+            $booking_dropped = true;
+        }
+    }
 
     // Services: one per line, up to 20 lines, each up to 100 characters.
     $services = [];
@@ -197,7 +212,7 @@ function webcare_sanitize_business_details( $raw ) {
         }
     }
 
-    return [ $details, $valid, $hours_dropped, $blank_days ];
+    return [ $details, $valid, $hours_dropped, $blank_days, $booking_dropped ];
 }
 
 /* ------------------------------------------------------------------
@@ -225,6 +240,7 @@ function webcare_handle_business() {
     $valid         = $result[1];
     $hours_dropped = $result[2];
     $blank_days    = $result[3];
+    $booking_drop  = $result[4];
 
     if ( ! $valid ) {
         set_transient( webcare_business_transient_key( get_current_user_id() ), $details, 5 * MINUTE_IN_SECONDS );
@@ -236,10 +252,12 @@ function webcare_handle_business() {
     update_option( 'webcare_business_details', $details, true );
     delete_transient( webcare_business_transient_key( get_current_user_id() ) );
 
-    // The most important warning wins: invalid times first, then blank days.
+    // The most important warning wins: invalid times first, then the booking link, then blank days.
     $msg = 'business_saved';
     if ( $hours_dropped ) {
         $msg = 'business_saved_hours';
+    } elseif ( $booking_drop ) {
+        $msg = 'business_saved_booking';
     } elseif ( $blank_days ) {
         $msg = 'business_saved_blank_days';
     }
@@ -363,6 +381,16 @@ function webcare_render_business_page() {
                 webcare_render_business_field( 'phone', __( 'Phone', 'webcare' ), $text( 'phone' ), [ 'type' => 'tel', 'maxlength' => 40, 'autocomplete' => 'off' ] );
                 webcare_render_business_field( 'email', __( 'Email', 'webcare' ), $text( 'email' ), [ 'type' => 'email', 'autocomplete' => 'off' ] );
                 webcare_render_business_field( 'price', __( 'Price range (optional)', 'webcare' ), $text( 'price' ), [ 'maxlength' => 20, 'placeholder' => '££', 'help' => __( 'For example £, ££ or £££.', 'webcare' ) ] );
+                webcare_render_business_field(
+                    'booking_url',
+                    __( 'Online booking link (optional)', 'webcare' ),
+                    $text( 'booking_url' ),
+                    [
+                        'maxlength'   => 300,
+                        'placeholder' => 'https://yourclinic.cliniko.com',
+                        'help'        => __( 'If clients book online, paste the address of your booking page. Webcare counts clicks on it (and on common booking systems such as Cliniko, Jane, Acuity and Calendly) in your "Enquiry actions" figures. Visitors see no difference, and this is not published for Google.', 'webcare' ),
+                    ]
+                );
                 ?>
             </div>
 

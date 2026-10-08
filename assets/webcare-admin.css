@@ -71,3 +71,24 @@
         width: 90px;
     }
 }
+
+/* Enquiry actions table (main Webcare page). */
+.webcare-wrap .webcare-stats {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+}
+.webcare-wrap .webcare-stats th,
+.webcare-wrap .webcare-stats td {
+    padding: 8px 12px 8px 0;
+    text-align: left;
+    border-bottom: 1px solid #dcdcde;
+}
+.webcare-wrap .webcare-stats thead th {
+    font-size: 13px;
+    font-weight: 600;
+}
+.webcare-wrap .webcare-stats tbody td {
+    font-size: 16px;
+    font-weight: 600;
+}
