@@ -247,11 +247,27 @@ function webcare_render_visitor_section() {
     if ( $this_v['visits'] < 1 && $this_v['views'] < 1 ) {
         echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
     } else {
-        // Most-viewed pages (the address is shown as plain text).
-        echo '<h4>' . esc_html__( 'Most-viewed pages this quarter', 'webcare' ) . '</h4>';
-        $top = array_slice( $this_v['pages'], 0, 5, true );
+        // The home page almost always tops the list and hides the more telling pages, so it is shown
+        // on its own line and the "most-viewed" list covers the other pages only.
+        $home_path  = webcare_normalise_path( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ) );
+        $home_path  = ( '' === $home_path ) ? '/' : $home_path;
+        $home_views = isset( $this_v['pages'][ $home_path ] ) ? (int) $this_v['pages'][ $home_path ] : 0;
+        $others     = $this_v['pages'];
+        unset( $others[ $home_path ] );
+
+        echo '<p><strong>' . esc_html__( 'Home page:', 'webcare' ) . '</strong> ' . esc_html(
+            sprintf(
+                /* translators: %s: number of page views */
+                _n( '%s view', '%s views', $home_views, 'webcare' ),
+                number_format_i18n( $home_views )
+            )
+        ) . '</p>';
+
+        // Most-viewed other pages (the address is shown as plain text).
+        echo '<h4>' . esc_html__( 'Most-viewed other pages this quarter', 'webcare' ) . '</h4>';
+        $top = array_slice( $others, 0, 5, true );
         if ( empty( $top ) ) {
-            echo '<p class="webcare-help">' . esc_html__( 'No pages recorded yet.', 'webcare' ) . '</p>';
+            echo '<p class="webcare-help">' . esc_html__( 'No other pages viewed yet.', 'webcare' ) . '</p>';
         } else {
             echo '<ol class="webcare-top-pages">';
             foreach ( $top as $path => $views ) {

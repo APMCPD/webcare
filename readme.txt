@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -114,6 +114,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.3.1 =
+* The home page is shown on its own line in "Your website this quarter", and the most-viewed list now covers the other pages, which are more telling.
 
 = 1.3.0 =
 * New "Your website this quarter" card: visits, page views, most-viewed pages, where visits came from (search, AI assistants, social, other, direct) and the mobile/tablet/desktop share, as anonymous monthly totals counted by Webcare itself. No cookies and nothing stored on visitors' devices. Can be switched off per site with the `webcare_track_visits` filter. The enquiry actions table now sits in the same card.

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare
  * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,7 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.3.1 - The home page is shown on its own line; "most-viewed pages" now lists the other pages.
  * 1.3.0 - Website visitor numbers on the Webcare page ("Your website this quarter"): visits, page views,
  *         most-viewed pages, where visits came from and phone/tablet/desktop share, as anonymous monthly
  *         totals. No cookies and nothing stored on visitors' devices. Switch off per site with the
@@ -40,7 +41,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.3.0' );
+define( 'WEBCARE_VERSION', '1.3.1' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
