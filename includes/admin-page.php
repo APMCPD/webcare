@@ -49,6 +49,7 @@ function webcare_messages() {
         'business_saved_blank_days' => [ 'warning', __( 'Saved — note: days left blank will be shown to Google as closed.', 'webcare' ) ],
         'business_saved_booking' => [ 'warning', __( 'Your business details have been saved, but the online booking link could not be used and was left out. It needs to be the web address of a booking page, for example https://yourclinic.cliniko.com or yourwebsite.co.uk/book.', 'webcare' ) ],
         'business_invalid'     => [ 'error', __( 'Nothing was saved. Please check the business type and email address, then try again.', 'webcare' ) ],
+        'key_renewed'  => [ 'success', __( 'A new connection key has been created. The old key has stopped working, so please give the new key to APM.', 'webcare' ) ],
         'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) ],
         'send_failed'  => [
             'error',
@@ -115,6 +116,8 @@ function webcare_render_page() {
             <h2><?php echo esc_html__( 'Your service', 'webcare' ); ?></h2>
             <?php webcare_render_service_section(); ?>
         </div>
+
+        <?php webcare_render_connection_card(); ?>
     </div>
     <?php
 }
@@ -388,6 +391,57 @@ function webcare_render_enquiry_section() {
         echo '<p class="webcare-help">' . esc_html__( 'Clicks show interest — a booking click isn\'t a confirmed appointment.', 'webcare' ) . '</p>';
     }
 
+}
+
+/* ------------------------------------------------------------------
+ * Connection to APM card (Administrators only)
+ * ---------------------------------------------------------------- */
+
+// The secret key APM's health check app uses to fetch this website's figures. Shown only to
+// Administrators (manage_options), never to Editors. The key is made the first time an Administrator looks.
+function webcare_render_connection_card() {
+    if ( ! current_user_can( 'manage_options' ) || ! function_exists( 'webcare_get_connection_key' ) ) {
+        return;
+    }
+
+    try {
+        $feed_on = webcare_report_feed_enabled();
+        $key     = $feed_on ? webcare_get_connection_key( true ) : '';
+
+        $last      = get_option( 'webcare_feed_last_fetch', 0 );
+        $last_text = __( 'not yet', 'webcare' );
+        if ( is_numeric( $last ) && (int) $last > 0 ) {
+            $format = trim( (string) get_option( 'date_format', '' ) . ' ' . (string) get_option( 'time_format', '' ) );
+            $when   = wp_date( '' !== $format ? $format : 'j F Y, H:i', (int) $last );
+            if ( is_string( $when ) && '' !== $when ) {
+                $last_text = $when;
+            }
+        }
+    } catch ( \Throwable $e ) {
+        return;
+    }
+    ?>
+    <div class="webcare-card" id="webcare-connection">
+        <h2><?php echo esc_html__( 'Connection to APM', 'webcare' ); ?></h2>
+        <?php if ( ! $feed_on ) : ?>
+            <p><?php echo esc_html__( 'The connection to APM is switched off on this website.', 'webcare' ); ?></p>
+        <?php elseif ( '' === $key ) : ?>
+            <p><?php echo esc_html__( 'The connection key could not be created. Please contact APM.', 'webcare' ); ?></p>
+        <?php else : ?>
+            <p class="webcare-help"><?php echo esc_html__( 'APM uses this to fetch your website figures for your quarterly report. Keep it private.', 'webcare' ); ?></p>
+            <p>
+                <label class="screen-reader-text" for="webcare-connection-key"><?php echo esc_html__( 'Connection key', 'webcare' ); ?></label>
+                <input type="text" id="webcare-connection-key" class="large-text code" readonly="readonly" value="<?php echo esc_attr( $key ); ?>" onfocus="this.select();">
+            </p>
+            <p class="webcare-help"><?php echo esc_html( sprintf( /* translators: %s: date and time, or "not yet" */ __( 'Last fetched by APM: %s', 'webcare' ), $last_text ) ); ?></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Create a new key? The current key stops working straight away, and APM cannot fetch your figures until it is given the new one.', 'webcare' ) ); ?>');">
+                <input type="hidden" name="action" value="webcare_new_key">
+                <?php wp_nonce_field( 'webcare_new_key' ); ?>
+                <p><button type="submit" class="button"><?php echo esc_html__( 'Create a new key', 'webcare' ); ?></button></p>
+            </form>
+        <?php endif; ?>
+    </div>
+    <?php
 }
 
 function webcare_render_service_section() {

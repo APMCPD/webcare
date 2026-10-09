@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,8 @@ Webcare is installed on every website we host and manage. It gives the client (E
 * enter their business details (phone, address, opening hours, services) for Google and AI assistants, and
 * see anonymous quarterly website numbers: visits, page views, most-viewed pages, where visitors came from and which devices they use, and
 * see anonymous quarterly counts of enquiry actions: clicks on phone, email and online-booking links, and contact form sends.
+
+Behind the scenes it also gives APM's health check app a secure, read-only way to fetch the website's monthly figures for the quarterly report (see "Report feed for APM" below).
 
 = Business details for Google & AI =
 
@@ -70,6 +72,27 @@ Switching it off on one site: add `add_filter( 'webcare_track_enquiries', '__ret
 
 Limits: the monthly total is read, increased by one and saved, so on a very busy site two clicks at the same instant could count as one (fine for small clinic sites). If a security plugin blocks the public REST API for visitors, clicks cannot be counted. Counting starts from the first page view after the update (shown on the card as "Counted since tracking started on ..."). The booking-link setting is built into cached pages, so a changed booking link can take a few minutes (until the page cache refreshes) to start counting.
 
+= Report feed for APM (quarterly report) =
+
+So APM's health check app (a separate server) can put a site's figures into the quarterly report without anyone copying numbers by hand, Webcare offers a signed, read-only address:
+
+`GET /wp-json/webcare/v1/report?from=2026_07&to=2026_09`
+
+The full written contract (signature recipe, examples, error codes) is in `docs/webcare-feed.md` in the GitHub repository. In short:
+
+* The connection key: a secret of 64 hex characters, created the first time an Administrator opens the Webcare page and shown ONLY to users who can manage options (Administrators) in a small card called "Connection to APM". Editors never see it. A "Create a new key" button (with a confirmation question) makes a new one; the old key stops working immediately, so give the new key to APM. The key is never included in any answer the feed gives and is not autoloaded.
+* Every request must send two headers: `X-Webcare-Timestamp` (unix seconds, within 5 minutes of the website's clock) and `X-Webcare-Signature` (lower-case hex `hash_hmac( 'sha256', timestamp . "\n" . 'GET' . "\n" . '/webcare/v1/report?from=' . from . '&to=' . to, key )`). The signature is checked in constant time.
+* `from` and `to` are months written `YYYY_MM` (both included); they are the only parameters that are read or signed, and any other parameter is ignored (the caller may add an unsigned `_=<anything>` to defeat a misconfigured edge cache). `from` must not be after `to`, at most 24 months can be asked for at once, and `to` may be at most one month in the future.
+* Wrong, missing, old or future signatures all get the same plain `401` ("webcare_unauthorised") that says nothing about what was wrong, including when no key has been created yet. The signature is checked first, so a correctly signed request is always answered. Only requests that fail are counted: once 20 have failed from one visitor connection within 10 minutes, further failing requests from that connection get `429` until the 10 minutes are up (a one-way scrambled code of the connection is kept briefly for this, the same as the spam limits above; the real address is never stored). A correctly signed request with a bad month range gets `400`.
+* What it returns (JSON, schema version 1): the plugin version, the site address, when it was generated and the site timezone; whether counting is on and when it started; for each month in the range the four enquiry totals and the visit figures exactly as stored (views, visits, sources, devices, up to 200 page addresses, and a "some page views were turned away" note), with zeros for months that have no data; a few care facts (WordPress version, PHP version, theme name, how many core/plugin/theme updates WordPress currently knows about, number of active plugins); and whether the business details are complete and how they are published (`yoast`, `webcare`, `other_seo_plugin`, `none` or `off`). It never contains the connection key, the booking link, or anything about individual visitors (none is stored).
+* Every answer (success and errors) is sent with `Cache-Control: no-store`, `Pragma: no-cache` and `Expires: 0`.
+* The key only exists once an Administrator has opened the Webcare page once, so for each new site an Administrator must do that first (until then the feed answers `401`). The `timezone` value in the answer is usually a name like `Europe/London` but can be an offset such as `+01:00`.
+* The card shows "Last fetched by APM: ..." (the time of the most recent successful fetch; to avoid writing to the database on every request it is updated at most once an hour).
+
+Switching it off on one site: add `add_filter( 'webcare_report_feed', '__return_false' );` to that site's code. The address then does not exist (a normal 404) and the Connection card says it is switched off.
+
+Limits: the update counts come from WordPress's own saved update checks (refreshed about twice a day), so they can be a few hours behind. If a security plugin blocks the public REST API, APM cannot fetch the figures.
+
 = What is stored =
 
 * `webcare_business_details` - what the client typed on the Business details page (including the optional online booking link).
@@ -77,6 +100,8 @@ Limits: the monthly total is read, increased by one and saved, so on a very busy
 * `webcare_visits_YYYY_MM` - one option per month (for example `webcare_visits_2026_10`) holding page views, visits, visits by source (search, ai, social, other, direct), visits by device (mobile, tablet, desktop), up to 200 page addresses with their view counts, and a "capped" note if some page views were turned away by the spam limits. Not autoloaded.
 * `webcare_visits_started` - the date the first page view was recorded (used for "counted since" on the Visitors part and to show last quarter as a dash if it ended before then).
 * `webcare_tracking_started` - the date enquiry counting began.
+* `webcare_connection_key` - the secret key (64 hex characters) APM uses to sign requests to the report feed. Not autoloaded. Created the first time an Administrator opens the Webcare page and replaced when they press "Create a new key".
+* `webcare_feed_last_fetch` - the time (unix seconds) APM last fetched the report feed successfully, updated at most once an hour. Not autoloaded.
 
 All of these are deliberately kept if the plugin is deleted, so details and history survive an accidental reinstall; there is no uninstall clean-up. Saving business details does not clear any caches, so changes can take a few minutes to appear. Webcare also keeps a one-minute "please wait" marker to stop accidental double-sending of change requests, the typed form values for up to 5 minutes after a failed submission so nothing is lost, and the temporary spam-limit markers described above (10 minutes per visitor, 1 hour for the whole site; separate ones for enquiry clicks and page views).
 
@@ -114,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.4.0 =
+* New signed, read-only report feed (`/wp-json/webcare/v1/report`) so APM's health check app can fetch a site's monthly figures for the quarterly report. Protected by a secret connection key that only Administrators can see (new "Connection to APM" card on the Webcare page, with a "Create a new key" button). Can be switched off per site with the `webcare_report_feed` filter. Nothing changes for visitors.
 
 = 1.3.1 =
 * The home page is shown on its own line in "Your website this quarter", and the most-viewed list now covers the other pages, which are more telling.

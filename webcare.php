@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare
  * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.3.1
+ * Version: 1.4.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,10 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.4.0 - A signed, read-only "report feed" (/wp-json/webcare/v1/report) so APM's health check app can fetch this
+ *         site's monthly figures for the quarterly report. Protected by a secret connection key that only
+ *         Administrators see (Webcare page > "Connection to APM"). Switch off per site with the
+ *         'webcare_report_feed' filter.
  * 1.3.1 - The home page is shown on its own line; "most-viewed pages" now lists the other pages.
  * 1.3.0 - Website visitor numbers on the Webcare page ("Your website this quarter"): visits, page views,
  *         most-viewed pages, where visits came from and phone/tablet/desktop share, as anonymous monthly
@@ -41,7 +45,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.3.1' );
+define( 'WEBCARE_VERSION', '1.4.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -61,6 +65,7 @@ require_once WEBCARE_PATH . 'includes/schema-output.php';
 require_once WEBCARE_PATH . 'includes/business-details.php';
 require_once WEBCARE_PATH . 'includes/enquiry-tracking.php';
 require_once WEBCARE_PATH . 'includes/visit-tracking.php';
+require_once WEBCARE_PATH . 'includes/report-feed.php';
 
 // Menu page + styles. (The Business details submenu runs just after the main menu exists.)
 add_action( 'admin_menu', 'webcare_register_menu' );
@@ -73,6 +78,7 @@ add_action( 'wp_dashboard_setup', 'webcare_register_dashboard_widget' );
 // Form submission (logged-in users only - deliberately no "nopriv" version).
 add_action( 'admin_post_webcare_request', 'webcare_handle_request' );
 add_action( 'admin_post_webcare_business', 'webcare_handle_business' );
+add_action( 'admin_post_webcare_new_key', 'webcare_handle_new_key' );
 
 // Business details for Google & AI. Both hooks are always registered; each one checks which
 // SEO plugin is active at the moment it runs, so plugin load order doesn't matter.
@@ -91,3 +97,9 @@ add_action( 'wp_head', 'webcare_output_business_schema', 20 );
 add_action( 'wp_enqueue_scripts', 'webcare_enqueue_tracking' );
 add_action( 'rest_api_init', 'webcare_register_event_route' );
 add_action( 'et_pb_contact_form_submit', 'webcare_count_divi_form', 10, 3 );
+
+// Report feed for APM's health check app (signed, read-only; see includes/report-feed.php and docs/webcare-feed.md).
+// - GET /wp-json/webcare/v1/report is only answered to requests signed with the site's connection key.
+// - Switch off on one site with: add_filter( 'webcare_report_feed', '__return_false' );
+add_action( 'rest_api_init', 'webcare_register_report_route' );
+add_filter( 'rest_post_dispatch', 'webcare_feed_no_store', 10, 3 );
