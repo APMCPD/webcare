@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 function webcare_register_menu() {
     add_menu_page(
-        __( 'Webcare', 'webcare' ),
-        __( 'Webcare', 'webcare' ),
+        __( 'Webcare Connect', 'webcare' ),
+        __( 'Webcare Connect', 'webcare' ),
         WEBCARE_CAPABILITY,
         'webcare',
         'webcare_render_page',
@@ -88,7 +88,7 @@ function webcare_render_page() {
     }
     ?>
     <div class="wrap webcare-wrap">
-        <h1><?php echo esc_html__( 'Webcare', 'webcare' ); ?></h1>
+        <h1><?php echo esc_html__( 'Webcare Connect', 'webcare' ); ?></h1>
         <?php webcare_render_notice(); ?>
 
         <div class="webcare-card">

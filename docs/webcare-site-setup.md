@@ -1,6 +1,6 @@
 # Webcare - setting up a new client site (for APM staff)
 
-Do these steps once for every client site, after the Webcare plugin is installed.
+Do these steps once for every client site, after the Webcare Connect plugin is installed.
 Total time: about 15 minutes.
 
 Webcare counts visitors, page views and enquiry actions by itself. There is **no separate analytics plugin to install** (no Independent Analytics, no Google Analytics).
@@ -12,9 +12,9 @@ Webcare counts visitors, page views and enquiry actions by itself. There is **no
 
 (Webcare adds the client's business details to Yoast's own markup. If the site uses a different SEO plugin, Webcare says so on the Business details page - ask the developer.)
 
-## 2. Fill in Webcare > Business details
+## 2. Fill in Webcare Connect > Business details
 
-Go to **Webcare > Business details** and fill in everything you can:
+Go to **Webcare Connect > Business details** and fill in everything you can:
 
 - Type of business, business name (full name - this one is required), short description
 - Phone, email, address
@@ -28,10 +28,10 @@ Press **Save business details**. Because of page caching, changes can take a few
 
 Staff who are logged in as Editor or Administrator are **never counted**, so test in a private window.
 
-1. Note the numbers on **Webcare > Overview > Your website this quarter** (Visits and Page views).
+1. Note the numbers on **Webcare Connect > Overview > Your website this quarter** (Visits and Page views).
 2. Open the live site's home page in a **private/incognito window** (not logged in), typing the address in directly.
 3. Click through to **one other page** on the site.
-4. Back in the admin, refresh **Webcare > Overview** after a minute. You should see **Page views +2** and **Visits +1** (the home page was a visit; the second page was only a page view because you came from inside the site).
+4. Back in the admin, refresh **Webcare Connect > Overview** after a minute. You should see **Page views +2** and **Visits +1** (the home page was a visit; the second page was only a page view because you came from inside the site).
 5. If nothing changes, purge the Breeze cache, repeat in a new private window and check again.
 
 Visits are counted when someone arrives from outside the website (a search engine, another site, a typed address or bookmark). They are **not** a count of unique people. Reloading a page, or using the browser's back/forward buttons, is **not** counted again, so test by opening two different pages (don't reload). Pages that were cached before the plugin update carry no page code yet and are not counted until the page cache is purged (Breeze > purge all). The same applies if the site's WordPress security keys ("salts") are ever changed: purge the cache afterwards, or page views stop counting until the cached pages refresh.
@@ -44,7 +44,7 @@ Use pretty permalinks (the default on our sites). With "plain" permalinks (`?p=1
 2. Click a **booking** link (for example the "Book now" button).
 3. Click an **email** link if the site has one.
 4. Send a **test contact form** (fill in the Divi contact form and submit it - you should see the normal "thank you" message).
-5. Log in as an Administrator, go to **Webcare** and look at the **Enquiry actions** table in the same card.
+5. Log in as an Administrator, go to **Webcare Connect** and look at the **Enquiry actions** table in the same card.
    - Refresh the page after a minute. You should see 1 more for each thing you tried.
    - If a number is missing, wait a few minutes, purge the Breeze cache, repeat the test in a new private window and check again.
 6. If the contact form is still not counted, tell the developer which form it was (some forms are not made with Divi and cannot be counted).

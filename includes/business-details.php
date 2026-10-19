@@ -22,7 +22,7 @@ function webcare_register_business_menu() {
     // "Webcare" entry in the submenu. Same slug and same page as the top-level menu.
     add_submenu_page(
         'webcare',
-        __( 'Webcare', 'webcare' ),
+        __( 'Webcare Connect', 'webcare' ),
         __( 'Overview', 'webcare' ),
         WEBCARE_CAPABILITY,
         'webcare',
@@ -338,7 +338,7 @@ function webcare_render_business_page() {
         <div class="webcare-card">
             <h2><?php echo esc_html__( 'Help Google and AI find you', 'webcare' ); ?></h2>
             <p><?php echo esc_html__( 'These details are published invisibly in your website\'s code, so Google and AI assistants (ChatGPT, Claude, Google\'s AI answers) can read your phone number, address, opening hours and services accurately.', 'webcare' ); ?></p>
-            <p><?php echo esc_html__( 'They don\'t change what visitors see. If your opening hours are shown on a page, that text still needs updating separately — use "Request a change" on the Webcare page.', 'webcare' ); ?></p>
+            <p><?php echo esc_html__( 'They don\'t change what visitors see. If your opening hours are shown on a page, that text still needs updating separately — use "Request a change" on the Webcare Connect page.', 'webcare' ); ?></p>
             <p><?php echo esc_html__( 'After you save, changes can take a few minutes to appear because of page caching.', 'webcare' ); ?></p>
             <div class="notice notice-<?php echo esc_attr( $status[0] ); ?> inline"><p><strong><?php echo esc_html__( 'Status:', 'webcare' ); ?></strong> <?php echo esc_html( $status[1] ); ?></p></div>
         </div>
@@ -388,7 +388,7 @@ function webcare_render_business_page() {
                     [
                         'maxlength'   => 300,
                         'placeholder' => 'https://yourclinic.cliniko.com',
-                        'help'        => __( 'If clients book online, paste the address of your booking page. Webcare counts clicks on it (and on common booking systems such as Cliniko, Jane, Acuity and Calendly) in your "Enquiry actions" figures. Visitors see no difference, and this is not published for Google.', 'webcare' ),
+                        'help'        => __( 'If clients book online, paste the address of your booking page. Webcare Connect counts clicks on it (and on common booking systems such as Cliniko, Jane, Acuity and Calendly) in your "Enquiry actions" figures. Visitors see no difference, and this is not published for Google.', 'webcare' ),
                     ]
                 );
                 ?>

@@ -7,7 +7,7 @@ function webcare_register_dashboard_widget() {
     if ( ! current_user_can( WEBCARE_CAPABILITY ) ) {
         return;
     }
-    wp_add_dashboard_widget( 'webcare_dashboard_widget', __( 'Webcare', 'webcare' ), 'webcare_render_dashboard_widget' );
+    wp_add_dashboard_widget( 'webcare_dashboard_widget', __( 'Webcare Connect', 'webcare' ), 'webcare_render_dashboard_widget' );
 }
 
 // Kept light: no remote calls, so the Dashboard stays fast.

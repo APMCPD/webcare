@@ -1,10 +1,10 @@
-=== APM Webcare ===
+=== Webcare Connect ===
 Contributors: apm
 Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,7 +25,7 @@ Behind the scenes it also gives APM's health check app a secure, read-only way t
 
 = Business details for Google & AI =
 
-The Webcare menu has a "Business details" page. The client fills in their business type, phone, email, address, opening hours, services, areas served and (optionally) price range. Webcare publishes this invisibly in the website's code as schema.org markup, so Google and AI assistants can read it accurately. It does not change anything visitors see, and it never publishes ratings or reviews.
+The Webcare Connect menu has a "Business details" page. The client fills in their business type, phone, email, address, opening hours, services, areas served and (optionally) price range. Webcare publishes this invisibly in the website's code as schema.org markup, so Google and AI assistants can read it accurately. It does not change anything visitors see, and it never publishes ratings or reviews.
 
 How it is published (decided automatically when each page loads):
 
@@ -40,7 +40,7 @@ Switching it off on one site: add `add_filter( 'webcare_publish_business_schema'
 
 = Visitor numbers (quarterly report figures) =
 
-The main Webcare page has a "Your website this quarter" card. Its "Visitors" part shows, for this quarter (and last quarter for the first two items):
+The main Webcare Connect page has a "Your website this quarter" card. Its "Visitors" part shows, for this quarter (and last quarter for the first two items):
 
 * Visits and page views. A page view is one new look at a page. A visit is a page view where the visitor arrived from OUTSIDE the website (a search engine, another website, or a typed address / bookmark). Moving from one page of the site to another is a page view only. Reloading a page and using the browser's back/forward buttons are not counted again. Visits are therefore not a count of unique people.
 * The five most-viewed pages (shown as page addresses such as `/about-us`).
@@ -80,7 +80,7 @@ So APM's health check app (a separate server) can put a site's figures into the 
 
 The full written contract (signature recipe, examples, error codes) is in `docs/webcare-feed.md` in the GitHub repository. In short:
 
-* The connection key: a secret of 64 hex characters, created the first time an Administrator opens the Webcare page and shown ONLY to users who can manage options (Administrators) in a small card called "Connection to APM". Editors never see it. A "Create a new key" button (with a confirmation question) makes a new one; the old key stops working immediately, so give the new key to APM. The key is never included in any answer the feed gives and is not autoloaded.
+* The connection key: a secret of 64 hex characters, created the first time an Administrator opens the Webcare Connect page and shown ONLY to users who can manage options (Administrators) in a small card called "Connection to APM". Editors never see it. A "Create a new key" button (with a confirmation question) makes a new one; the old key stops working immediately, so give the new key to APM. The key is never included in any answer the feed gives and is not autoloaded.
 * Every request must send two headers: `X-Webcare-Timestamp` (unix seconds, within 5 minutes of the website's clock) and `X-Webcare-Signature` (lower-case hex `hash_hmac( 'sha256', timestamp . "\n" . 'GET' . "\n" . '/webcare/v1/report?from=' . from . '&to=' . to, key )`). The signature is checked in constant time.
 * `from` and `to` are months written `YYYY_MM` (both included); they are the only parameters that are read or signed, and any other parameter is ignored (the caller may add an unsigned `_=<anything>` to defeat a misconfigured edge cache). `from` must not be after `to`, at most 24 months can be asked for at once, and `to` may be at most one month in the future.
 * Wrong, missing, old or future signatures all get the same plain `401` ("webcare_unauthorised") that says nothing about what was wrong, including when no key has been created yet. The signature is checked first, so a correctly signed request is always answered. Only requests that fail are counted: once 20 have failed from one visitor connection within 10 minutes, further failing requests from that connection get `429` until the 10 minutes are up (a one-way scrambled code of the connection is kept briefly for this, the same as the spam limits above; the real address is never stored). A correctly signed request with a bad month range gets `400`.
@@ -100,7 +100,7 @@ Limits: the update counts come from WordPress's own saved update checks (refresh
 * `webcare_visits_YYYY_MM` - one option per month (for example `webcare_visits_2026_10`) holding page views, visits, visits by source (search, ai, social, other, direct), visits by device (mobile, tablet, desktop), up to 200 page addresses with their view counts, and a "capped" note if some page views were turned away by the spam limits. Not autoloaded.
 * `webcare_visits_started` - the date the first page view was recorded (used for "counted since" on the Visitors part and to show last quarter as a dash if it ended before then).
 * `webcare_tracking_started` - the date enquiry counting began.
-* `webcare_connection_key` - the secret key (64 hex characters) APM uses to sign requests to the report feed. Not autoloaded. Created the first time an Administrator opens the Webcare page and replaced when they press "Create a new key".
+* `webcare_connection_key` - the secret key (64 hex characters) APM uses to sign requests to the report feed. Not autoloaded. Created the first time an Administrator opens the Webcare Connect page and replaced when they press "Create a new key".
 * `webcare_feed_last_fetch` - the time (unix seconds) APM last fetched the report feed successfully, updated at most once an hour. Not autoloaded.
 
 All of these are deliberately kept if the plugin is deleted, so details and history survive an accidental reinstall; there is no uninstall clean-up. Saving business details does not clear any caches, so changes can take a few minutes to appear. Webcare also keeps a one-minute "please wait" marker to stop accidental double-sending of change requests, the typed form values for up to 5 minutes after a failed submission so nothing is lost, and the temporary spam-limit markers described above (10 minutes per visitor, 1 hour for the whole site; separate ones for enquiry clicks and page views).
@@ -108,7 +108,7 @@ All of these are deliberately kept if the plugin is deleted, so details and hist
 == Installation ==
 
 1. Upload the `webcare` folder to `/wp-content/plugins/` (or install the zip from a GitHub release) and activate it.
-2. Visit the Webcare menu in the WordPress admin to check it looks right.
+2. Visit the Webcare Connect menu in the WordPress admin to check it looks right.
 
 No setup is needed. Support emails go to webcare@apmcpd.co.uk by default.
 
@@ -139,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.4.2 =
+* Plugin renamed to "Webcare Connect" (Plugins screen, admin menu, page heading and dashboard box), so it is clearly the on-site part of the APM Webcare service. Plugin folder, settings and automatic updates are unchanged. Emails still say [Webcare].
 
 = 1.4.1 =
 * Plugin renamed to "APM Webcare" on the Plugins screen. The Webcare menu, plugin folder and automatic updates are unchanged.

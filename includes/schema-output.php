@@ -375,7 +375,7 @@ function webcare_business_status() {
     if ( 'yoast' === $route ) {
         return [ 'success', __( 'Published via Yoast SEO.', 'webcare' ) ];
     }
-    return [ 'success', __( 'Published by Webcare.', 'webcare' ) ];
+    return [ 'success', __( 'Published by Webcare Connect.', 'webcare' ) ];
 }
 
 /* ------------------------------------------------------------------

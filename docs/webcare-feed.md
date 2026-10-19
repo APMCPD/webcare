@@ -32,7 +32,7 @@ Months are the calendar months in the **website's timezone** (the `timezone` fie
 
 ## Signing
 
-The key is the site's connection key: 64 lower-case hex characters, shown to Administrators on the Webcare page in the "Connection to APM" card. Use it **as the text string it is** (the 64 characters), not decoded to bytes.
+The key is the site's connection key: 64 lower-case hex characters, shown to Administrators on the Webcare Connect page in the "Connection to APM" card. Use it **as the text string it is** (the 64 characters), not decoded to bytes.
 
 1. `timestamp` = current unix time in whole seconds, as a string of digits (for example `1790000000`).
 2. Build the **canonical string**, three parts joined by a single line-feed character (`\n`, byte 0x0A; no carriage return, no trailing newline):
@@ -186,12 +186,12 @@ Notes for the app:
 - Treat `401` as "the key we hold is wrong, expired or was replaced (a client Administrator pressed "Create a new key"), or the clock is off". Check the app server's clock first, then ask for the new key.
 - The signature is checked first. A correctly signed request is always answered, even if other wrong attempts have filled the limit (several visitors can share one connection address behind a proxy or CDN, so strangers must not be able to lock APM out). Only a request that fails authentication is counted (`401`), and once 20 have been counted in 10 minutes further failing requests get `429` and nothing more is recorded.
 - Do not retry `401`s in a loop: it only adds to the failure count for the app's connection address on that site. Successful requests do not count towards the limit.
-- **Onboarding step:** a new site returns `401` until the key exists, and the key is only created when an Administrator opens the main Webcare page once (Webcare menu in the WordPress admin). So for every new site, log in as an Administrator, open **Webcare**, and copy the key from the "Connection to APM" card into the app.
+- **Onboarding step:** a new site returns `401` until the key exists, and the key is only created when an Administrator opens the main Webcare Connect page once (Webcare Connect menu in the WordPress admin). So for every new site, log in as an Administrator, open **Webcare Connect**, and copy the key from the "Connection to APM" card into the app.
 
 ## The connection key
 
 - Option `webcare_connection_key`: 64 lower-case hex characters from `random_bytes( 32 )`. Not autoloaded.
-- Created the first time a user who can `manage_options` (an Administrator) opens the main Webcare page. Shown only to such users in the "Connection to APM" card, in a read-only box. Editors (who can otherwise use Webcare) never see it.
+- Created the first time a user who can `manage_options` (an Administrator) opens the main Webcare Connect page. Shown only to such users in the "Connection to APM" card, in a read-only box. Editors (who can otherwise use Webcare) never see it.
 - "Create a new key" (a button with a confirmation question) posts to `admin-post.php?action=webcare_new_key`, which needs `manage_options` and a nonce. The old key stops working immediately.
 - The key is never logged, returned by the feed or put in a web address.
 
