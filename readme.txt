@@ -1,10 +1,10 @@
-=== Webcare ===
+=== APM Webcare ===
 Contributors: apm
 Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.4.1 =
+* Plugin renamed to "APM Webcare" on the Plugins screen. The Webcare menu, plugin folder and automatic updates are unchanged.
 
 = 1.4.0 =
 * New signed, read-only report feed (`/wp-json/webcare/v1/report`) so APM's health check app can fetch a site's monthly figures for the quarterly report. Protected by a secret connection key that only Administrators can see (new "Connection to APM" card on the Webcare page, with a "Create a new key" button). Can be switched off per site with the `webcare_report_feed` filter. Nothing changes for visitors.

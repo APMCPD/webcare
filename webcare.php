@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Webcare
- * Description: One place for your Webcare service details, website health and change requests.
- * Version: 1.4.0
+ * Plugin Name: APM Webcare
+ * Description: The on-site part of the APM Webcare service: your service details, website health and change requests in one place.
+ * Version: 1.4.1
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,7 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.4.1 - Plugin renamed to "APM Webcare" on the Plugins screen. The Webcare menu, folder and updates are unchanged.
  * 1.4.0 - A signed, read-only "report feed" (/wp-json/webcare/v1/report) so APM's health check app can fetch this
  *         site's monthly figures for the quarterly report. Protected by a secret connection key that only
  *         Administrators see (Webcare page > "Connection to APM"). Switch off per site with the
@@ -45,7 +46,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.4.0' );
+define( 'WEBCARE_VERSION', '1.4.1' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
