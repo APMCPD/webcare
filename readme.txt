@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.5.0 =
+* New "Email check" card on the Webcare page. Editors and Administrators can send a test email to their own account address, see when the last test was and whether it was sent, and see how many emails the website failed to send this month and last month (contact forms, password resets and so on). Administrators also see which email plugin is in use, the address emails are sent from, and whether the sending domain has SPF and DMARC records (looked up through normal DNS). Stored in two small options (`webcare_email_last_test`, `webcare_mail_failures`), not autoloaded and kept if the plugin is deleted; the test address is never stored.
 
 = 1.4.2 =
 * Plugin renamed to "Webcare Connect" (Plugins screen, admin menu, page heading and dashboard box), so it is clearly the on-site part of the APM Webcare service. Plugin folder, settings and automatic updates are unchanged. Emails still say [Webcare].

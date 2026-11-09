@@ -51,6 +51,19 @@ function webcare_messages() {
         'business_invalid'     => [ 'error', __( 'Nothing was saved. Please check the business type and email address, then try again.', 'webcare' ) ],
         'key_renewed'  => [ 'success', __( 'A new connection key has been created. The old key has stopped working, so please give the new key to APM.', 'webcare' ) ],
         'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) ],
+        'email_test_sent'         => [ 'success', __( 'Test email sent to your account\'s email address. Please check your inbox (and spam or junk folder) in the next few minutes. If it hasn\'t arrived within 15 minutes, please let us know.', 'webcare' ) ],
+        'email_test_failed'       => [
+            'error',
+            $support
+                ? sprintf(
+                    /* translators: %s: support email address */
+                    __( 'The test email could not be sent, so your website may not be sending emails such as contact form messages. Please let us know at %s.', 'webcare' ),
+                    $support
+                )
+                : __( 'The test email could not be sent, so your website may not be sending emails such as contact form messages. Please let us know.', 'webcare' ),
+        ],
+        'email_test_rate_limited' => [ 'error', __( 'Please wait a minute before sending another test email.', 'webcare' ) ],
+        'email_test_no_address'   => [ 'error', __( 'Your account doesn\'t have a valid email address, so the test can\'t be sent. Please update it on your Profile page.', 'webcare' ) ],
         'send_failed'  => [
             'error',
             $support
@@ -110,6 +123,11 @@ function webcare_render_page() {
         <div class="webcare-card" id="webcare-request">
             <h2><?php echo esc_html__( 'Request a change', 'webcare' ); ?></h2>
             <?php webcare_render_request_form(); ?>
+        </div>
+
+        <div class="webcare-card" id="webcare-email">
+            <h2><?php echo esc_html__( 'Email check', 'webcare' ); ?></h2>
+            <?php webcare_render_email_check_section(); ?>
         </div>
 
         <div class="webcare-card">

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.4.2
+ * Version: 1.5.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,9 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.5.0 - New "Email check" card on the Webcare page: a "Send a test email" button (to your own account address),
+ *         a count of emails the website failed to send, and, for Administrators only, the email plugin in use and
+ *         whether the sending domain has SPF and DMARC records.
  * 1.4.2 - Plugin renamed to "Webcare Connect": Plugins screen, admin menu, page heading and dashboard box. Folder,
  *         settings and automatic updates are unchanged. Emails still say [Webcare] (the service name).
  * 1.4.1 - Plugin renamed to "APM Webcare" on the Plugins screen. The Webcare menu, folder and updates are unchanged.
@@ -48,7 +51,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.4.2' );
+define( 'WEBCARE_VERSION', '1.5.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -69,6 +72,7 @@ require_once WEBCARE_PATH . 'includes/business-details.php';
 require_once WEBCARE_PATH . 'includes/enquiry-tracking.php';
 require_once WEBCARE_PATH . 'includes/visit-tracking.php';
 require_once WEBCARE_PATH . 'includes/report-feed.php';
+require_once WEBCARE_PATH . 'includes/email-check.php';
 
 // Menu page + styles. (The Business details submenu runs just after the main menu exists.)
 add_action( 'admin_menu', 'webcare_register_menu' );
@@ -82,6 +86,11 @@ add_action( 'wp_dashboard_setup', 'webcare_register_dashboard_widget' );
 add_action( 'admin_post_webcare_request', 'webcare_handle_request' );
 add_action( 'admin_post_webcare_business', 'webcare_handle_business' );
 add_action( 'admin_post_webcare_new_key', 'webcare_handle_new_key' );
+add_action( 'admin_post_webcare_email_test', 'webcare_handle_email_test' );
+
+// Email check: count every failed email on the site (contact forms, password resets, etc.).
+// The counter is cheap and wrapped so it can never break the email that is failing.
+add_action( 'wp_mail_failed', 'webcare_record_mail_failure' );
 
 // Business details for Google & AI. Both hooks are always registered; each one checks which
 // SEO plugin is active at the moment it runs, so plugin load order doesn't matter.
