@@ -105,7 +105,7 @@ function webcare_render_page() {
         <?php webcare_render_notice(); ?>
 
         <div class="webcare-card">
-            <h2><?php echo esc_html__( 'Website health', 'webcare' ); ?></h2>
+            <h2><?php echo esc_html__( 'Your Webcare setup', 'webcare' ); ?></h2>
             <?php webcare_render_health_section(); ?>
         </div>
 
@@ -140,9 +140,10 @@ function webcare_render_page() {
     <?php
 }
 
-// Kept as its own function so a later version can swap in real health checks.
+// Kept as its own function so a later version can swap in real health checks. Since 1.6.0 it shows
+// the setup checklist (includes/admin-charts.php) instead of a "coming soon" note.
 function webcare_render_health_section() {
-    echo '<p>' . esc_html__( 'Your first quarterly website health check is coming soon. Every quarter we check your site\'s speed, security and search-engine setup, and we\'ll show a plain-English summary here.', 'webcare' ) . '</p>';
+    webcare_render_setup_checklist();
 }
 
 /* ------------------------------------------------------------------
@@ -215,6 +216,10 @@ function webcare_render_activity_section() {
         return;
     }
 
+    // Headline numbers and the six-month chart first (1.6.0), then the detail.
+    webcare_render_summary_tiles( $visits_on, $clicks_on );
+    webcare_render_trend_chart( $visits_on, $clicks_on );
+
     if ( $visits_on ) {
         webcare_render_visitor_section();
     }
@@ -243,6 +248,8 @@ function webcare_render_visitor_section() {
 
     echo '<h3>' . esc_html__( 'Visitors', 'webcare' ) . '</h3>';
     ?>
+    <details class="webcare-compare">
+    <summary><?php echo esc_html__( 'Compare visits with last quarter', 'webcare' ); ?></summary>
     <table class="webcare-stats">
         <thead>
             <tr>
@@ -264,6 +271,7 @@ function webcare_render_visitor_section() {
             </tr>
         </tbody>
     </table>
+    </details>
     <?php
     if ( $this_v['visits'] < 1 && $this_v['views'] < 1 ) {
         echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
@@ -303,25 +311,8 @@ function webcare_render_visitor_section() {
             echo '</ol>';
         }
 
-        // Where visits came from, as a share of all visits.
-        $source_labels = [
-            'search' => __( 'Search engines', 'webcare' ),
-            'ai'     => __( 'AI assistants', 'webcare' ),
-            'social' => __( 'Social media', 'webcare' ),
-            'other'  => __( 'Other websites', 'webcare' ),
-            'direct' => __( 'Typed in or bookmarked', 'webcare' ),
-        ];
-        $source_total = array_sum( $this_v['sources'] );
-        echo '<h4>' . esc_html__( 'Where visits came from', 'webcare' ) . '</h4>';
-        if ( $source_total < 1 ) {
-            echo '<p class="webcare-help">' . esc_html__( 'No visits counted yet this quarter.', 'webcare' ) . '</p>';
-        } else {
-            echo '<ul class="webcare-list">';
-            foreach ( $source_labels as $key => $label ) {
-                echo '<li>' . esc_html( $label ) . ': ' . esc_html( number_format_i18n( $this_v['sources'][ $key ] ) ) . ' (' . esc_html( (string) webcare_percent( $this_v['sources'][ $key ], $source_total ) ) . '%)</li>';
-            }
-            echo '</ul>';
-        }
+        // Where visits came from, as a share of all visits (a stacked bar since 1.6.0).
+        webcare_render_sources_chart( $this_v, $last_v );
 
         // Which kind of device (counted once per visit).
         $device_labels = [
@@ -368,7 +359,8 @@ function webcare_render_enquiry_section() {
     $started_month    = ( '' !== $started ) ? str_replace( '-', '_', substr( $started, 0, 7 ) ) : '';
     $last_not_tracked = ( '' !== $started_month && $last_info['to_month'] < $started_month );
 
-    echo '<h3>' . esc_html__( 'Enquiry actions', 'webcare' ) . '</h3>';
+    echo '<h3>' . esc_html__( 'How people got in touch this quarter', 'webcare' ) . '</h3>';
+    webcare_render_enquiry_bars( $this_qtr );
 
     $rows = [
         'phone'   => __( 'Phone number clicks', 'webcare' ),
@@ -377,6 +369,8 @@ function webcare_render_enquiry_section() {
         'form'    => __( 'Contact form sends', 'webcare' ),
     ];
     ?>
+    <details class="webcare-compare">
+    <summary><?php echo esc_html__( 'Compare enquiries with last quarter', 'webcare' ); ?></summary>
     <table class="webcare-stats">
         <thead>
             <tr>
@@ -395,6 +389,7 @@ function webcare_render_enquiry_section() {
             <?php endforeach; ?>
         </tbody>
     </table>
+    </details>
     <?php
     $since = webcare_tracking_since_text();
     if ( '' !== $since ) {

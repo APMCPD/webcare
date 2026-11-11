@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.5.0
+ * Version: 1.6.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -51,7 +51,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.5.0' );
+define( 'WEBCARE_VERSION', '1.6.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -64,6 +64,7 @@ define( 'WEBCARE_CAPABILITY', 'edit_pages' );
 
 require_once WEBCARE_PATH . 'includes/config.php';
 require_once WEBCARE_PATH . 'includes/admin-page.php';
+require_once WEBCARE_PATH . 'includes/admin-charts.php';
 require_once WEBCARE_PATH . 'includes/dashboard-widget.php';
 require_once WEBCARE_PATH . 'includes/request-form.php';
 require_once WEBCARE_PATH . 'includes/updater.php';
