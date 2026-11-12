@@ -64,6 +64,7 @@ function webcare_messages() {
         ],
         'email_test_rate_limited' => [ 'error', __( 'Please wait a minute before sending another test email.', 'webcare' ) ],
         'email_test_no_address'   => [ 'error', __( 'Your account doesn\'t have a valid email address, so the test can\'t be sent. Please update it on your Profile page.', 'webcare' ) ],
+        'email_test_bad_address'  => [ 'error', __( 'That doesn\'t look like a valid email address. Please check it and try again.', 'webcare' ) ],
         'send_failed'  => [
             'error',
             $support

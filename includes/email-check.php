@@ -202,9 +202,19 @@ function webcare_handle_email_test() {
     }
     check_admin_referer( 'webcare_email_test' );
 
-    // The test only ever goes to the logged-in person's own address, never to anything from the request.
+    // Editors: the test only ever goes to their own account address.
+    // Administrators may type a different address (e.g. when the login uses a placeholder address).
     $user      = wp_get_current_user();
     $recipient = $user->user_email;
+    if ( current_user_can( 'manage_options' ) && isset( $_POST['webcare_test_to'] ) ) {
+        $typed = sanitize_email( wp_unslash( (string) $_POST['webcare_test_to'] ) );
+        if ( '' !== trim( (string) wp_unslash( $_POST['webcare_test_to'] ) ) ) {
+            if ( ! is_email( $typed ) ) {
+                webcare_redirect( 'email_test_bad_address' );
+            }
+            $recipient = $typed;
+        }
+    }
     if ( ! is_email( $recipient ) ) {
         webcare_redirect( 'email_test_no_address' );
     }
@@ -408,14 +418,30 @@ function webcare_render_email_check_section() {
     $last = webcare_email_get_last_test();
 
     // --- A. Test email ---
-    echo '<p>' . esc_html__( 'This sends a test email to your own account address to check that your website can send emails, such as contact form messages.', 'webcare' ) . '</p>';
-    if ( is_email( $user->user_email ) ) {
-        echo '<p>' . esc_html__( 'The test will be sent to:', 'webcare' ) . ' <strong>' . esc_html( $user->user_email ) . '</strong></p>';
+    $can_choose = current_user_can( 'manage_options' );
+    // Don't pre-fill placeholder login addresses (e.g. wp@wordpress.com) - nobody reads those.
+    $prefill = is_email( $user->user_email ) ? $user->user_email : '';
+    if ( preg_match( '/@(wordpress\.com|example\.(com|org|net))$/i', $prefill ) ) {
+        $prefill = '';
+    }
+    if ( $can_choose ) {
+        echo '<p>' . esc_html__( 'This sends a test email to check that your website can send emails, such as contact form messages.', 'webcare' ) . '</p>';
+    } else {
+        echo '<p>' . esc_html__( 'This sends a test email to your own account address to check that your website can send emails, such as contact form messages.', 'webcare' ) . '</p>';
+        if ( is_email( $user->user_email ) ) {
+            echo '<p>' . esc_html__( 'The test will be sent to:', 'webcare' ) . ' <strong>' . esc_html( $user->user_email ) . '</strong></p>';
+        }
     }
     ?>
     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
         <input type="hidden" name="action" value="webcare_email_test">
         <?php wp_nonce_field( 'webcare_email_test' ); ?>
+        <?php if ( $can_choose ) : ?>
+            <p>
+                <label for="webcare-test-to"><?php echo esc_html__( 'Send the test to:', 'webcare' ); ?></label><br>
+                <input type="email" id="webcare-test-to" name="webcare_test_to" class="regular-text" value="<?php echo esc_attr( $prefill ); ?>">
+            </p>
+        <?php endif; ?>
         <p><button type="submit" class="button"><?php echo esc_html__( 'Send a test email', 'webcare' ); ?></button></p>
     </form>
     <p class="webcare-help"><?php echo esc_html__( '"Sent" means your website handed the email over successfully. The only way to be sure it arrived is to check your inbox.', 'webcare' ); ?></p>
