@@ -359,6 +359,13 @@ function webcare_setup_items( $details = null ) {
         ? [ true, __( 'Opening hours added', 'webcare' ) ]
         : [ false, __( 'Opening hours not added', 'webcare' ), $biz_url, __( 'Add opening hours', 'webcare' ) ];
 
+    // Only shown on sites that have been sent reviews, so other sites' score is not lowered.
+    $reviews = get_option( 'webcare_reviews', null );
+    if ( is_array( $reviews ) ) {
+        $received = isset( $reviews['received_at'] ) ? (int) $reviews['received_at'] : 0;
+        $items[]  = [ true, sprintf( /* translators: %s: date */ __( 'Google reviews received from APM (last updated %s)', 'webcare' ), function_exists( 'webcare_email_time_text' ) && $received > 0 ? webcare_email_time_text( $received ) : __( 'unknown', 'webcare' ) ) ];
+    }
+
     return $items;
 }
 

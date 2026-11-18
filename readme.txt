@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.7.0 =
+* Google reviews. APM's health check app can send this website's latest Google reviews (a signed POST to `/wp-json/webcare/v1/reviews`, using the same connection key as the report feed). Show them on any page with the `[webcare_reviews]` shortcode (options `count`, default 6, and `show_summary`, default yes). The website never contacts Google, shows every rating it is sent (low ratings are not hidden) and adds no review markup for search engines. Stored in one option (`webcare_reviews`, not autoloaded). Switch off on one site with `add_filter( 'webcare_reviews_endpoint', '__return_false' );`.
 
 = 1.5.0 =
 * New "Email check" card on the Webcare page. Editors and Administrators can send a test email to their own account address, see when the last test was and whether it was sent, and see how many emails the website failed to send this month and last month (contact forms, password resets and so on). Administrators also see which email plugin is in use, the address emails are sent from, and whether the sending domain has SPF and DMARC records (looked up through normal DNS). Stored in two small options (`webcare_email_last_test`, `webcare_mail_failures`), not autoloaded and kept if the plugin is deleted; the test address is never stored.

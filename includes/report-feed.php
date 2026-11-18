@@ -448,7 +448,7 @@ function webcare_feed_add_no_cache_headers( $response ) {
 // matched ignoring capital letters and a trailing slash, so odd spellings of it are covered too.
 function webcare_feed_no_store( $response, $server = null, $request = null ) {
     try {
-        if ( is_object( $request ) && '/webcare/v1/report' === strtolower( rtrim( (string) $request->get_route(), '/' ) ) && is_object( $response ) && method_exists( $response, 'header' ) ) {
+        if ( is_object( $request ) && in_array( strtolower( rtrim( (string) $request->get_route(), '/' ) ), [ '/webcare/v1/report', '/webcare/v1/reviews' ], true ) && is_object( $response ) && method_exists( $response, 'header' ) ) {
             webcare_feed_add_no_cache_headers( $response );
         }
     } catch ( \Throwable $e ) {

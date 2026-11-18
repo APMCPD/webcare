@@ -203,3 +203,62 @@ Notes for the app:
 ## Switching it off
 
 On one site: `add_filter( 'webcare_report_feed', '__return_false' );` (for example in a code-snippets plugin). The address then does not exist at all and the Connection card says it is switched off.
+
+# Google reviews push (added in plugin 1.7.0)
+
+The other direction: APM's app **sends** this site's Google reviews to the site. The site never contacts Google and holds no Google key. The `[webcare_reviews]` shortcode then shows them.
+
+## Request
+
+- `POST https://{site}/wp-json/webcare/v1/reviews`
+- Headers: `Content-Type: application/json`, `X-Webcare-Timestamp: <unix seconds>`, `X-Webcare-Signature: <hex>`
+- Key: the same 64-hex connection key as the report feed, used as literal text.
+- Signing string (`\n` is a newline, no newline at the end): `{timestamp}\nPOST\n/webcare/v1/reviews\n{lower-case hex sha256 of the RAW request body bytes}`
+- Signature: lower-case hex HMAC-SHA256 of the signing string, using the key. Compared with `hash_equals`. The timestamp must be within 300 seconds of the site's clock.
+- The signature covers the exact body bytes, so send exactly the bytes that were signed.
+
+Known-answer test vector:
+
+- key = `0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef`
+- timestamp = `1763460000`
+- body (exact bytes) = `{"version":1,"generated_at":1763460000,"reviews":[]}`
+- sha256(body) = `acec356224dd8cea04de64ddf67dc1c7c253be1f63018812c7b6f2ad1db01688`
+- signature = `c4a0ea75372793839ab4104c30578ce07e310470a5d1fd053ff62b4253c263ab`
+
+## Body (JSON, at most 256 KB)
+
+```json
+{
+  "version": 1,
+  "generated_at": 1763460000,
+  "place_url": "https://maps.google.com/?cid=...",
+  "average_rating": 4.8,
+  "total_count": 127,
+  "reviews": [
+    { "id": "string, up to 200", "name": "Sarah T.", "rating": 5, "text": "may be empty", "date": "2026-11-02" }
+  ]
+}
+```
+
+- `generated_at`: unix seconds when the app built the set. Refused with `409` if older than the one already stored (equal is fine).
+- `place_url`: the "see all reviews on Google" link. `https` only; may be absent or empty.
+- `average_rating`: Google's own figure, 0 to 5, or `null`. `total_count`: Google's own total, a whole number of 0 or more.
+- `reviews`: newest first. The site keeps at most 50. Each needs a `rating` of 1 to 5 and a `date` as `YYYY-MM-DD`; a review that fails this is dropped. `text` has all HTML stripped and is cut to 2000 characters; `name` is cut to 60.
+- Names are shortened by the app before sending ("Sarah Thompson" becomes "Sarah T."; empty becomes "A Google reviewer"). Full names never leave the app.
+
+## Answers
+
+| Code | Body | Meaning |
+|------|------|---------|
+| `200` | `{"ok":true,"stored":N}` | Saved. `N` is the number of reviews kept |
+| `400` | `webcare_reviews_invalid` | Not valid JSON, wrong shape, or over 256 KB |
+| `401` | `webcare_unauthorised` | Missing or wrong signature or timestamp, or no key created yet (same generic message as the report feed) |
+| `409` | `webcare_reviews_stale` | `generated_at` is older than the stored set |
+| `404` | `rest_no_route` | Plugin older than 1.7.0, or the address was switched off |
+| `429` | `webcare_rate_limited` | Too many failed attempts from the connection (shares the report feed's limit) |
+
+## Storage, display and switching off
+
+- Saved in the option `webcare_reviews` (not autoloaded), with a `received_at` time added. Shown on pages by `[webcare_reviews count="6" show_summary="yes"]`; draws nothing if no reviews are stored.
+- All ratings are shown as sent: there is deliberately no filter by rating. No review schema/JSON-LD is output.
+- Switch off on one site: `add_filter( 'webcare_reviews_endpoint', '__return_false' );`

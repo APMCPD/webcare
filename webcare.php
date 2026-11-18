@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.6.1
+ * Version: 1.7.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,9 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.7.0 - Google reviews: APM's health check app can send this site's latest Google reviews (a signed POST to
+ *         /wp-json/webcare/v1/reviews), shown anywhere with the [webcare_reviews] shortcode. The website never
+ *         contacts Google. Switch off per site with the 'webcare_reviews_endpoint' filter.
  * 1.5.0 - New "Email check" card on the Webcare page: a "Send a test email" button (to your own account address),
  *         a count of emails the website failed to send, and, for Administrators only, the email plugin in use and
  *         whether the sending domain has SPF and DMARC records.
@@ -51,7 +54,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.6.1' );
+define( 'WEBCARE_VERSION', '1.7.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -73,6 +76,7 @@ require_once WEBCARE_PATH . 'includes/business-details.php';
 require_once WEBCARE_PATH . 'includes/enquiry-tracking.php';
 require_once WEBCARE_PATH . 'includes/visit-tracking.php';
 require_once WEBCARE_PATH . 'includes/report-feed.php';
+require_once WEBCARE_PATH . 'includes/reviews.php';
 require_once WEBCARE_PATH . 'includes/email-check.php';
 
 // Menu page + styles. (The Business details submenu runs just after the main menu exists.)
@@ -116,3 +120,9 @@ add_action( 'et_pb_contact_form_submit', 'webcare_count_divi_form', 10, 3 );
 // - Switch off on one site with: add_filter( 'webcare_report_feed', '__return_false' );
 add_action( 'rest_api_init', 'webcare_register_report_route' );
 add_filter( 'rest_post_dispatch', 'webcare_feed_no_store', 10, 3 );
+
+// Google reviews pushed by APM's health check app (signed POST; see includes/reviews.php and docs/webcare-feed.md).
+// - Show them with the [webcare_reviews] shortcode (options: count, show_summary).
+// - Switch off on one site with: add_filter( 'webcare_reviews_endpoint', '__return_false' );
+add_action( 'rest_api_init', 'webcare_register_reviews_route' );
+add_shortcode( 'webcare_reviews', 'webcare_reviews_shortcode' );
