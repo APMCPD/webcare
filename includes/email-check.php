@@ -58,12 +58,13 @@ function webcare_email_get_last_test() {
         return [];
     }
     return [
-        'time'   => (int) $saved['time'],
-        'ok'     => ! empty( $saved['ok'] ),
-        'reason' => isset( $saved['reason'] ) && is_string( $saved['reason'] ) ? $saved['reason'] : '',
-        'from'   => isset( $saved['from'] ) && is_string( $saved['from'] ) ? $saved['from'] : '',
-        'mailer' => isset( $saved['mailer'] ) && is_string( $saved['mailer'] ) ? $saved['mailer'] : '',
-        'host'   => isset( $saved['host'] ) && is_string( $saved['host'] ) ? $saved['host'] : '',
+        'time'    => (int) $saved['time'],
+        'ok'      => ! empty( $saved['ok'] ),
+        'reason'  => isset( $saved['reason'] ) && is_string( $saved['reason'] ) ? $saved['reason'] : '',
+        'from'    => isset( $saved['from'] ) && is_string( $saved['from'] ) ? $saved['from'] : '',
+        'mailer'  => isset( $saved['mailer'] ) && is_string( $saved['mailer'] ) ? $saved['mailer'] : '',
+        'host'    => isset( $saved['host'] ) && is_string( $saved['host'] ) ? $saved['host'] : '',
+        'service' => isset( $saved['service'] ) && is_string( $saved['service'] ) ? $saved['service'] : '',
     ];
 }
 
@@ -128,8 +129,62 @@ function webcare_email_detect_plugin() {
     return '';
 }
 
+// Only the provider ID is needed from the selected connection.
+function webcare_email_fluentsmtp_provider( $from_email ) {
+    $settings = get_option( 'fluentmail-settings' );
+    if ( ! is_string( $from_email ) || ! is_array( $settings ) || ! is_array( $settings['connections'] ?? null ) ) {
+        return '';
+    }
+    $connections = $settings['connections'];
+    $mappings    = $settings['mappings'] ?? [];
+    if ( ! is_array( $mappings ) ) {
+        return '';
+    }
+    $mappings = array_change_key_case( $mappings, CASE_LOWER );
+    $from     = strtolower( $from_email );
+    if ( '' !== $from && array_key_exists( $from, $mappings ) ) {
+        $key = $mappings[ $from ];
+    } else {
+        $misc = $settings['misc'] ?? [];
+        if ( ! is_array( $misc ) ) {
+            return '';
+        }
+        $key = $misc['default_connection'] ?? null;
+        if ( ( null === $key || '' === $key ) && 1 === count( $connections ) ) {
+            $key = key( $connections );
+        }
+    }
+    if ( ( ! is_string( $key ) && ! is_int( $key ) ) || '' === $key || ! is_array( $connections[ $key ] ?? null ) ) {
+        return '';
+    }
+    $connection = $connections[ $key ];
+    if ( ! is_array( $connection['provider_settings'] ?? null ) ) {
+        return '';
+    }
+    $provider = $connection['provider_settings']['provider'] ?? null;
+    $names    = [
+        'smtp2go'     => 'SMTP2GO',
+        'smtp'        => 'SMTP',
+        'ses'         => 'Amazon SES',
+        'mailgun'     => 'Mailgun',
+        'sendgrid'    => 'SendGrid',
+        'sendinblue'  => 'Brevo',
+        'postmark'    => 'Postmark',
+        'sparkpost'   => 'SparkPost',
+        'elasticmail' => 'Elastic Email',
+        'pepipost'    => 'Netcore (Pepipost)',
+        'gmail'       => 'Google',
+        'outlook'     => 'Microsoft 365 / Outlook',
+        'mailjet'     => 'Mailjet',
+        'resend'      => 'Resend',
+        'transmail'   => 'ZeptoMail',
+        'default'     => 'default',
+    ];
+    return is_string( $provider ) ? ( $names[ $provider ] ?? '' ) : '';
+}
+
 // How the last test was sent, in plain English.
-function webcare_email_mailer_text( $mailer, $host, $plugin = '' ) {
+function webcare_email_mailer_text( $mailer, $host, $plugin = '', $service = '' ) {
     switch ( $mailer ) {
         case 'smtp':
             return ( '' !== $host )
@@ -143,6 +198,10 @@ function webcare_email_mailer_text( $mailer, $host, $plugin = '' ) {
         case 'qmail':
             return __( 'The server\'s "qmail" program', 'webcare' );
         case 'plugin':
+            if ( '' !== $plugin && '' !== $service ) {
+                /* translators: 1: email plugin name, 2: email service name. */
+                return sprintf( __( 'Through %1$s (%2$s)', 'webcare' ), $plugin, $service );
+            }
             // Some plugins (FluentSMTP with an API connection, for example) skip the usual mail step.
             return ( '' !== $plugin )
                 /* translators: %s: email plugin name, e.g. FluentSMTP */
@@ -292,14 +351,26 @@ function webcare_handle_email_test() {
         $mailer = 'plugin';
     }
 
+    $service = '';
+    if ( $sent && in_array( $mailer, [ 'mail', '' ], true ) && 'FluentSMTP' === webcare_email_detect_plugin() ) {
+        $provider = webcare_email_fluentsmtp_provider( $from );
+        if ( 'default' === $provider ) {
+            $mailer = 'mail';
+        } else {
+            $mailer  = 'plugin';
+            $service = substr( sanitize_text_field( $provider ), 0, 60 );
+        }
+    }
+
     // The recipient address is deliberately not stored.
     $result = [
-        'time'   => time(),
-        'ok'     => $sent,
-        'reason' => $sent ? '' : webcare_redact_mail_error( $error_message ),
-        'from'   => $from,
-        'mailer' => $mailer,
-        'host'   => $host,
+        'time'    => time(),
+        'ok'      => $sent,
+        'reason'  => $sent ? '' : webcare_redact_mail_error( $error_message ),
+        'from'    => $from,
+        'mailer'  => $mailer,
+        'host'    => $host,
+        'service' => $service,
     ];
     if ( false === get_option( 'webcare_email_last_test', false ) ) {
         add_option( 'webcare_email_last_test', $result, '', 'no' );
@@ -517,7 +588,7 @@ function webcare_render_email_check_section() {
         if ( '' !== $last['from'] ) {
             echo '<li>' . esc_html__( 'Sent from address:', 'webcare' ) . ' <code>' . esc_html( $last['from'] ) . '</code></li>';
         }
-        echo '<li>' . esc_html__( 'How the last test was sent:', 'webcare' ) . ' ' . esc_html( webcare_email_mailer_text( $last['mailer'], $last['host'], $plugin ) ) . '</li>';
+        echo '<li>' . esc_html__( 'How the last test was sent:', 'webcare' ) . ' ' . esc_html( webcare_email_mailer_text( $last['mailer'], $last['host'], $plugin, $last['service'] ) ) . '</li>';
         if ( ! $last['ok'] && '' !== $last['reason'] ) {
             echo '<li>' . esc_html__( 'Reason given:', 'webcare' ) . ' <code>' . esc_html( $last['reason'] ) . '</code></li>';
         }

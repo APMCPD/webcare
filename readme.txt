@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,9 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.7.2 =
+* The Email check now shows which service FluentSMTP used to send the test email (for example, SMTP2GO) instead of incorrectly saying it used the server's basic mail function.
 
 = 1.7.1 =
 * Set a private approval contact for Google review replies under Webcare > Business details. APM receives the contact on a successful signed reviews push.
