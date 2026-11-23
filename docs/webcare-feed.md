@@ -244,7 +244,8 @@ Known-answer test vector:
 - `place_url`: the "see all reviews on Google" link. `https` only; may be absent or empty.
 - `average_rating`: Google's own figure, 0 to 5, or `null`. `total_count`: Google's own total, a whole number of 0 or more.
 - `reviews`: newest first. The site keeps at most 50. Each needs a `rating` of 1 to 5 and a `date` as `YYYY-MM-DD`; a review that fails this is dropped. `text` has all HTML stripped and is cut to 2000 characters; `name` is cut to 60.
-- Names are shortened by the app before sending ("Sarah Thompson" becomes "Sarah T."; empty becomes "A Google reviewer"). Full names never leave the app.
+- Reach sends only website-approved reviews and sends names as Google gives them.
+- If the saved feed has no `received_at` timestamp or was received more than 30 days ago, the shortcode displays nothing, including the summary and Google link.
 
 ## Answers
 

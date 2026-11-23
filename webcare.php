@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.7.2
+ * Version: 1.8.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,7 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.8.0 - Reach sends website-approved reviews with names as Google gives them. The shortcode hides the entire feed if the last update is missing or more than 30 days old.
  * 1.7.2 - Email check now names the service FluentSMTP sends through (e.g. SMTP2GO) instead of wrongly saying
  *         "the server's basic mail function" when an API connection is used.
  * 1.7.1 - Business details can now specify who approves Google review replies. The signed reviews push returns this contact.
@@ -57,7 +58,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.7.2' );
+define( 'WEBCARE_VERSION', '1.8.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).

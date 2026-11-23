@@ -13,8 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * "connection key" as the report feed, so only APM can send reviews. The full contract is in
  * docs/webcare-feed.md.
  *
- * What is shown is exactly what was sent, in the order sent. There is deliberately no option to hide
- * low ratings (hiding negative reviews is not allowed under UK consumer law). No review markup
+ * APM's Reach app decides which reviews to send. It only holds back reviews that make health,
+ * treatment or result claims because a review on a clinic's own website counts as its advertising
+ * under the CAP Code. Reach never holds reviews back for being negative. The overall rating, count
+ * and Google link always show in the default display when supplied. No review markup
  * (schema / JSON-LD) is added either: Google ignores a business's own reviews of itself.
  *
  * Every part is wrapped in try/catch so a problem here can never break the website.
@@ -339,6 +341,12 @@ function webcare_reviews_shortcode( $atts = [] ) {
 
         $data = get_option( 'webcare_reviews', [] );
         if ( ! is_array( $data ) || empty( $data['reviews'] ) || ! is_array( $data['reviews'] ) ) {
+            return '';
+        }
+
+        // Google's Business Profile API rules allow stored review content to be kept for no more than 30 days.
+        // APM refreshes it daily, so this only affects the display if updates stop.
+        if ( ! isset( $data['received_at'] ) || (int) $data['received_at'] < time() - 30 * DAY_IN_SECONDS ) {
             return '';
         }
 
