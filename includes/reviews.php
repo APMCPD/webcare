@@ -267,7 +267,16 @@ function webcare_rest_reviews( $request ) {
             }
         }
 
-        $response = new WP_REST_Response( [ 'ok' => true, 'stored' => count( $clean ) ], 200 );
+        $body    = [ 'ok' => true, 'stored' => count( $clean ) ];
+        $details = webcare_get_business_details();
+        $email   = webcare_biz_text( $details, 'review_contact_email' );
+        if ( '' !== $email && strlen( $email ) <= 190 && is_email( $email ) ) {
+            $body['review_contact'] = [
+                'name'  => webcare_reviews_truncate( sanitize_text_field( webcare_biz_text( $details, 'review_contact_name' ) ), 100 ),
+                'email' => $email,
+            ];
+        }
+        $response = new WP_REST_Response( $body, 200 );
         webcare_feed_add_no_cache_headers( $response );
         return $response;
     } catch ( \Throwable $e ) {

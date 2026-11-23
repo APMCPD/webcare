@@ -106,6 +106,13 @@ function webcare_sanitize_business_details( $raw ) {
         $details['email'] = $email;
     }
 
+    $details['review_contact_name'] = $plain( 'review_contact_name', 100 );
+    $contact_email = trim( $get( 'review_contact_email' ) );
+    $details['review_contact_email'] = sanitize_text_field( $contact_email );
+    if ( '' !== $contact_email && ( strlen( $contact_email ) > 190 || ! is_email( $contact_email ) || $contact_email !== $details['review_contact_email'] ) ) {
+        $valid = false;
+    }
+
     $details['street']   = $plain( 'street', 200 );
     $details['city']     = $plain( 'city', 100 );
     $details['county']   = $plain( 'county', 100 );
@@ -457,6 +464,15 @@ function webcare_render_business_page() {
                         'help'      => __( 'Towns and villages, separated by commas.', 'webcare' ),
                     ]
                 );
+                ?>
+            </div>
+
+            <div class="webcare-card">
+                <h2><?php echo esc_html__( 'Google review replies', 'webcare' ); ?></h2>
+                <p class="webcare-help"><?php echo esc_html__( 'APM drafts a reply to each new Google review and emails this person a private link to check, edit and approve it before it is posted. This is not shown publicly.', 'webcare' ); ?></p>
+                <?php
+                webcare_render_business_field( 'review_contact_name', __( 'Name of the person who approves replies', 'webcare' ), $text( 'review_contact_name' ), [ 'maxlength' => 100 ] );
+                webcare_render_business_field( 'review_contact_email', __( 'Their email address', 'webcare' ), $text( 'review_contact_email' ), [ 'type' => 'email', 'maxlength' => 190 ] );
                 ?>
             </div>
 

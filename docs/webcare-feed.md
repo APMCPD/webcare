@@ -257,6 +257,8 @@ Known-answer test vector:
 | `404` | `rest_no_route` | Plugin older than 1.7.0, or the address was switched off |
 | `429` | `webcare_rate_limited` | Too many failed attempts from the connection (shares the report feed's limit) |
 
+From 1.7.1, a successful `200` response includes `"review_contact":{"name":"Claire","email":"claire@example.co.uk"}` when the site has saved a valid approval email (up to 190 characters). The name is plain text (up to 100 characters) and may be empty. Reach uses a valid contact as the site’s choice and keeps its existing contact if the field is absent or invalid. Error responses omit this field.
+
 ## Storage, display and switching off
 
 - Saved in the option `webcare_reviews` (not autoloaded), with a `received_at` time added. Shown on pages by `[webcare_reviews count="6" show_summary="yes"]`; draws nothing if no reviews are stored.
