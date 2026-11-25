@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,7 +126,7 @@ If that address is invalid it is ignored (and noted in the PHP error log) and th
 
 == Releasing an update ==
 
-IMPORTANT: every release goes to ALL client sites automatically, usually within about 12 hours. Test first.
+IMPORTANT: from 1.9.0 onwards, a release goes to test sites first (at their next update check, about every 12 hours) and to every other client site 3 days later. Test first, then check a test site before the 3 days are up.
 
 1. Make your change.
 2. Change the version number in THREE places: the `Version:` line at the top of `webcare.php`, `WEBCARE_VERSION` just below it in the same file, and `Stable tag:` at the top of this file. All three must match.
@@ -134,11 +134,19 @@ IMPORTANT: every release goes to ALL client sites automatically, usually within 
 4. Commit and push to the `master` branch on GitHub (https://github.com/APMCPD/webcare).
 5. Test the new version on one site first.
 6. On GitHub, create a new Release from the `master` branch. The tag must be `v` followed by the exact version number, for example `v1.0.1`.
-7. Client sites check for updates about every 12 hours and install Webcare updates automatically.
+7. Client sites check for updates about every 12 hours. Test sites install the new version at their next check; every other site installs it 3 days after it first sees it (see Staged rollout below). Never reuse a version number, even for a release you deleted: always go up.
+
+Staged rollout
+
+Sites running 1.9.0 or later get releases on two schedules. Test sites install at the next automatic update check. Ordinary sites wait 3 days from the first time they see that version. To stop a bad release, delete the GitHub release or mark it as a pre-release within those 3 days, so sites can refresh their update information before installation.
 
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.9.0 =
+* Staged updates: test sites get new versions at their next update check; other sites wait 3 days, so a problem can be caught before it reaches every client. Administrators choose on the Webcare page.
+* Updates now come only from published GitHub releases, so deleting a release (or marking it as a pre-release) stops it reaching sites.
 
 = 1.8.0 =
 * Reach sends website-approved reviews with names as Google gives them. The shortcode hides the entire feed if the last update is missing or more than 30 days old.

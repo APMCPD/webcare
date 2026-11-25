@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.8.0
+ * Version: 1.9.0
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,8 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.9.0 - Staged updates: test sites get new versions at their next update check; other sites wait 3 days, so a problem can be
+ *         caught before it reaches every client. Administrators choose on the Webcare page. Updates now come only from published releases.
  * 1.8.0 - Reach sends website-approved reviews with names as Google gives them. The shortcode hides the entire feed if the last update is missing or more than 30 days old.
  * 1.7.2 - Email check now names the service FluentSMTP sends through (e.g. SMTP2GO) instead of wrongly saying
  *         "the server's basic mail function" when an API connection is used.
@@ -58,7 +60,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.8.0' );
+define( 'WEBCARE_VERSION', '1.9.0' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -96,6 +98,8 @@ add_action( 'admin_post_webcare_request', 'webcare_handle_request' );
 add_action( 'admin_post_webcare_business', 'webcare_handle_business' );
 add_action( 'admin_post_webcare_new_key', 'webcare_handle_new_key' );
 add_action( 'admin_post_webcare_email_test', 'webcare_handle_email_test' );
+
+add_action( 'admin_post_webcare_update_ring', 'webcare_handle_update_ring' );
 
 // Email check: count every failed email on the site (contact forms, password resets, etc.).
 // The counter is cheap and wrapped so it can never break the email that is failing.

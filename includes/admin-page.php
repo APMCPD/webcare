@@ -51,6 +51,8 @@ function webcare_messages() {
         'business_invalid'     => [ 'error', __( 'Nothing was saved. Please check the business type and email address, then try again.', 'webcare' ) ],
         'key_renewed'  => [ 'success', __( 'A new connection key has been created. The old key has stopped working, so please give the new key to APM.', 'webcare' ) ],
         'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) ],
+        'update_ring_saved'   => [ 'success', __( 'Update settings saved.', 'webcare' ) ],
+        'update_ring_invalid' => [ 'error', __( 'Please choose Test site or Ordinary site.', 'webcare' ) ],
         'email_test_sent'         => [ 'success', __( 'Test email sent to your account\'s email address. Please check your inbox (and spam or junk folder) in the next few minutes. If it hasn\'t arrived within 15 minutes, please let us know.', 'webcare' ) ],
         'email_test_failed'       => [
             'error',
@@ -136,6 +138,7 @@ function webcare_render_page() {
             <?php webcare_render_service_section(); ?>
         </div>
 
+        <?php webcare_render_updates_card(); ?>
         <?php webcare_render_connection_card(); ?>
     </div>
     <?php
@@ -518,4 +521,49 @@ function webcare_render_service_section() {
         echo '<h3>' . esc_html__( 'Your website belongs to you', 'webcare' ) . '</h3>';
         echo '<p>' . esc_html( $get( 'ownership' ) ) . '</p>';
     }
+}
+
+function webcare_render_updates_card() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    $test    = webcare_is_test_site();
+    $days    = webcare_update_delay_days();
+    $updates = get_site_transient( 'update_plugins' );
+    $plugin  = plugin_basename( WEBCARE_PATH . 'webcare.php' );
+    $version = $updates->response[ $plugin ]->new_version ?? '';
+    ?>
+    <div class="webcare-card" id="webcare-updates">
+        <h2><?php esc_html_e( 'Updates', 'webcare' ); ?></h2>
+        <p><?php echo esc_html( sprintf( __( 'Installed version: %s', 'webcare' ), WEBCARE_VERSION ) ); ?></p>
+        <p><?php echo esc_html( $test ? __( 'This site gets updates: straight away (test site)', 'webcare' ) : sprintf( _n( 'This site gets updates: %d day after each release', 'This site gets updates: %d days after each release', $days, 'webcare' ), $days ) ); ?></p>
+        <?php
+        if ( is_string( $version ) && version_compare( $version, WEBCARE_VERSION, '>' ) ) {
+            $at  = webcare_update_seen_at( $version );
+            $due = $at + $days * DAY_IN_SECONDS;
+            if ( $test || ( $at && $due <= time() ) ) {
+                $message = sprintf( __( 'Version %s is waiting and will install at the next automatic update check.', 'webcare' ), $version );
+            } elseif ( $at ) {
+                $message = sprintf( __( 'Version %1$s is waiting and will install automatically from %2$s.', 'webcare' ), $version, webcare_email_time_text( $due ) );
+            } else {
+                $message = sprintf( __( 'Version %s is waiting. The delay starts at the next automatic update check.', 'webcare' ), $version );
+            }
+            echo '<p>' . esc_html( $message ) . '</p>';
+            if ( ! $test ) {
+                echo '<p class="description">' . esc_html__( 'While it waits, the Plugins screen may say automatic updates are disabled for Webcare Connect. That is expected: it will still install on the date above.', 'webcare' ) . '</p>';
+            }
+        }
+        ?>
+        <form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+            <input type="hidden" name="action" value="webcare_update_ring">
+            <?php wp_nonce_field( 'webcare_update_ring' ); ?>
+            <label for="webcare-update-ring"><?php esc_html_e( 'Update schedule', 'webcare' ); ?></label>
+            <select id="webcare-update-ring" name="webcare_update_ring">
+                <option value="standard" <?php selected( ! $test ); ?>><?php esc_html_e( 'Ordinary site', 'webcare' ); ?></option>
+                <option value="test" <?php selected( $test ); ?>><?php esc_html_e( 'Test site', 'webcare' ); ?></option>
+            </select>
+            <?php submit_button( __( 'Save', 'webcare' ), 'secondary', 'submit', false ); ?>
+        </form>
+    </div>
+    <?php
 }
