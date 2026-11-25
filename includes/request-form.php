@@ -12,7 +12,7 @@ function webcare_urgency_options() {
     return [
         'convenient' => __( 'Whenever convenient', 'webcare' ),
         'few_days'   => __( 'Within a few days', 'webcare' ),
-        'urgent'     => __( 'Urgent — something is broken', 'webcare' ),
+        'urgent'     => __( 'Urgent: something is broken', 'webcare' ),
     ];
 }
 
@@ -56,7 +56,7 @@ function webcare_render_request_form() {
 
     // Not set up: no form for anyone. Admins also get the fix-it instructions.
     if ( '' === $support ) {
-        echo '<p>' . esc_html__( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) . '</p>';
+        echo '<p>' . esc_html__( 'Online requests aren\'t set up yet. Please contact us directly.', 'webcare' ) . '</p>';
         if ( current_user_can( 'manage_options' ) ) {
             echo '<div class="notice notice-warning inline"><p>'
                 . esc_html__( 'Administrator note: the support address is built into the plugin, so this should not normally appear - the built-in address appears to be invalid, so please contact APM. Adding the line below to wp-config.php (above the "That\'s all, stop editing" line) is an optional override that can also switch the form on:', 'webcare' )
@@ -206,8 +206,8 @@ function webcare_handle_request() {
 
     $is_urgent = ( 'urgent' === $urgency );
     $subject   = $is_urgent
-        ? '[Webcare] URGENT change request – ' . $domain
-        : '[Webcare] Change request – ' . $domain;
+        ? '[Webcare] URGENT change request: ' . $domain
+        : '[Webcare] Change request: ' . $domain;
     $subject   = webcare_strip_newlines( $subject );
 
     // Work out a readable role name (e.g. "Editor").
@@ -254,7 +254,7 @@ function webcare_handle_request() {
     $info     = webcare_service_info();
     $response = isset( $info['response_short'] ) ? (string) $info['response_short'] : '';
 
-    $confirm  = "Thanks — we've received your request and will reply to " . $email . ".\n";
+    $confirm  = "Thanks, we've received your request and will reply to " . $email . ".\n";
     if ( '' !== $response ) {
         $confirm .= $response . "\n";
     }
@@ -262,7 +262,7 @@ function webcare_handle_request() {
     $confirm .= 'Page: ' . ( '' !== $page ? $page : '(not given)' ) . "\n";
     $confirm .= 'How urgent: ' . $urgency_options[ $urgency ] . "\n\n";
     $confirm .= $message . "\n\n";
-    $confirm .= "— Webcare\n";
+    $confirm .= "Webcare\n";
 
     // Safety: the confirmation only ever goes to the logged-in account's own address,
     // never to whatever was typed in the form (otherwise it could be used to email strangers).

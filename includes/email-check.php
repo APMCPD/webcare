@@ -521,7 +521,7 @@ function webcare_render_email_check_section() {
         echo '<p>' . esc_html(
             sprintf(
                 /* translators: 1: date and time, 2: "sent" or "could not be sent" */
-                __( 'Last test: %1$s — %2$s', 'webcare' ),
+                __( 'Last test: %1$s: %2$s', 'webcare' ),
                 webcare_email_time_text( $last['time'] ),
                 $last['ok'] ? __( 'sent', 'webcare' ) : __( 'could not be sent', 'webcare' )
             )
@@ -544,7 +544,7 @@ function webcare_render_email_check_section() {
         echo '<p>' . esc_html(
             sprintf(
                 /* translators: 1: number this month, 2: number last month */
-                __( 'Emails that failed to send — this month: %1$s, last month: %2$s', 'webcare' ),
+                __( 'Emails that failed to send: this month: %1$s, last month: %2$s', 'webcare' ),
                 number_format_i18n( $this_n ),
                 number_format_i18n( $last_n )
             )
@@ -575,12 +575,12 @@ function webcare_render_email_check_section() {
     } elseif ( has_action( 'phpmailer_init' ) || has_filter( 'pre_wp_mail' ) ) {
         $plugin_text = __( 'Something on this site customises how email is sent (unknown plugin)', 'webcare' );
     } else {
-        $plugin_text = __( 'None — emails use the server\'s basic mail function, which is more likely to land in spam. APM recommends an email-sending plugin (e.g. FluentSMTP).', 'webcare' );
+        $plugin_text = __( 'None: emails use the server\'s basic mail function, which is more likely to land in spam. APM recommends an email-sending plugin (e.g. FluentSMTP).', 'webcare' );
     }
     echo '<li>' . esc_html__( 'Email plugin:', 'webcare' ) . ' ' . esc_html( $plugin_text ) . '</li>';
     if ( 'FluentSMTP' === $plugin && current_user_can( 'manage_options' ) ) {
         echo '<li><a href="' . esc_url( admin_url( 'options-general.php?page=fluent-mail#/logs' ) ) . '">'
-            . esc_html__( 'FluentSMTP keeps its own log of every email sent — open FluentSMTP\'s email log', 'webcare' )
+            . esc_html__( 'FluentSMTP keeps its own log of every email sent. Open FluentSMTP\'s email log', 'webcare' )
             . '</a></li>';
     }
 
@@ -613,7 +613,7 @@ function webcare_render_email_check_section() {
     if ( 'found' === $dns['spf'] ) {
         $spf_text = __( 'Found', 'webcare' );
     } elseif ( 'missing' === $dns['spf'] ) {
-        $spf_text = __( 'Not found — emails may be marked as spam', 'webcare' );
+        $spf_text = __( 'Not found: emails may be marked as spam', 'webcare' );
     } else {
         $spf_text = __( 'Couldn\'t check', 'webcare' );
     }
@@ -643,5 +643,5 @@ function webcare_render_email_check_section() {
     if ( '' !== $checked ) {
         echo '<p class="webcare-help">' . esc_html( sprintf( /* translators: %s: date and time */ __( 'Checked %s', 'webcare' ), $checked ) ) . '</p>';
     }
-    echo '<p class="webcare-help">' . esc_html__( 'Found doesn\'t guarantee the record includes your sending service. DKIM (the third record) can\'t be checked from here — ask APM if emails land in spam.', 'webcare' ) . '</p>';
+    echo '<p class="webcare-help">' . esc_html__( 'Found doesn\'t guarantee the record includes your sending service. DKIM (the third record) can\'t be checked from here. Ask APM if emails land in spam.', 'webcare' ) . '</p>';
 }

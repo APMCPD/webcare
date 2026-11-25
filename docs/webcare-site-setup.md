@@ -40,7 +40,7 @@ Use pretty permalinks (the default on our sites). With "plain" permalinks (`?p=1
 
 ## 4. Test the enquiry tracking
 
-1. In the same private/incognito window, click a **phone number** link (on a phone/tablet, or on desktop click any "tel:" link).
+1. On a phone, open a private browsing window and tap a phone number link.
 2. Click a **booking** link (for example the "Book now" button).
 3. Click an **email** link if the site has one.
 4. Send a **test contact form** (fill in the Divi contact form and submit it - you should see the normal "thank you" message).
@@ -53,9 +53,9 @@ Things that stop counting: a security plugin that blocks the public REST API for
 
 ## 5. Update the privacy statement (Complianz)
 
-Webcare counts visits, page views and clicks as anonymous totals. No cookies and nothing stored on visitors' devices; no names or contact details. We keep monthly totals and a list of the most-viewed page addresses. To limit spam, a one-way scrambled code based on the visitor's connection is kept briefly (normally 10 minutes) and then deleted. Do **not** change any Complianz settings, but do update the wording in the client's privacy statement so it mentions:
+Webcare keeps anonymous totals and the most-viewed page addresses. It sets no cookies and stores only an opt-out choice in the browser. To limit spam, it normally keeps a scrambled code based on the connection address for 10 minutes. WordPress normally clears expired codes within a day. Add `[webcare_optout]` to the privacy page. Do **not** change any Complianz settings, but do update the wording in the client's privacy statement so it mentions:
 
-> anonymous counts of visits and page views, and of clicks on phone, email and booking links
+> We count visits, page views and clicks on phone, email and booking links. You can opt out on this page.
 
 Do this in the Complianz privacy statement (or the client's own privacy page, wherever they list what they measure).
 

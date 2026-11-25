@@ -55,18 +55,18 @@ function webcare_service_info() {
             'Daily backups of your website',
             'We look after WordPress, theme and plugin updates for you',
             'Uptime monitoring, so we know if your site goes down',
-            'Content updates on request – new practitioners, price changes, opening hours, photos and text',
+            'Content updates on request: new practitioners, price changes, opening hours, photos and text',
             'A quarterly, plain-English website health check report',
             'Google Business Profile guidance and reminders',
         ],
-        'response_times' => 'Send us what you\'d like changed, along with any wording or photos we\'ll need. We aim to update your site within 1–2 working days (Monday to Friday) once we have everything. Content updates are subject to fair use.',
+        'response_times' => 'Send us what you\'d like changed, along with any wording or photos we\'ll need. We aim to update your site within 1 to 2 working days (Monday to Friday) once we have everything. Content updates are subject to fair use.',
         // Short version used in the confirmation email.
-        'response_short' => 'We aim to update your site within 1–2 working days (Monday to Friday) once we have everything we need.',
+        'response_short' => 'We aim to update your site within 1 to 2 working days (Monday to Friday) once we have everything we need.',
         'bigger_title'   => 'Something bigger in mind?',
-        'bigger'         => 'If you\'d like something beyond everyday updates, such as a new section or feature, just get in touch – we\'ll talk it through and let you know if it would be quoted separately.',
+        'bigger'         => 'If you\'d like something beyond everyday updates, such as a new section or feature, just get in touch. We\'ll talk it through and let you know if it would be quoted separately.',
         'email'          => webcare_get_support_email(),
         'phone'          => '',
-        'ownership'      => 'Your website is yours. Your domain stays in your name – we simply connect it to our hosting – and you can ask for a full copy of your site at any time. You can also request full Administrator access; if changes made with admin access cause problems, fixing them is chargeable.',
+        'ownership'      => 'Your website is yours. Your domain stays in your name. We simply connect it to our hosting, and you can ask for a full copy of your site at any time. You can also request full Administrator access; if changes made with admin access cause problems, fixing them is chargeable.',
     ];
 
     // Lets us override the content later without editing this file.

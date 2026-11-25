@@ -321,7 +321,7 @@ function webcare_visitor_hash() {
         }
         if ( '' === $found && ! empty( $_SERVER['HTTP_X_REAL_IP'] ) && is_string( $_SERVER['HTTP_X_REAL_IP'] ) ) {
             $candidate = trim( $_SERVER['HTTP_X_REAL_IP'] );
-            if ( false !== filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
+            if ( false !== filter_var( $candidate, FILTER_VALIDATE_IP, $public_flags ) ) {
                 $found = $candidate;
             }
         }
@@ -365,31 +365,31 @@ function webcare_limits_for( $type ) {
     }
     return [
         'visitor_prefix' => 'webcare_rl_',
-        'visitor_max'    => 30,
+        'visitor_max'    => 6,
         'site_key'       => 'webcare_rl_site',
-        'site_max'       => 300,
+        'site_max'       => 120,
     ];
 }
 
-// Site-wide brake (enquiries by default: at most 300 counted events per hour across ALL visitors).
+// Site-wide brake (enquiries by default: at most 120 counted events per hour across ALL visitors).
 // Even if someone fakes their address to dodge the per-visitor limit, the totals and the number of
 // temporary database rows stay bounded. Returns true if the site is over its limit (and adds a hit if not).
-function webcare_over_site_limit( $key = 'webcare_rl_site', $max = 300 ) {
+function webcare_over_site_limit( $key = 'webcare_rl_site', $max = 120 ) {
     return webcare_window_limit_reached( $key, $max, HOUR_IN_SECONDS );
 }
 
 // Read-only look at a site-wide brake: true if this hour's allowance is already used up. Checked
 // before anything else is written, so a flood creates no new temporary rows once the cap is hit.
-function webcare_site_limit_full( $key = 'webcare_rl_site', $max = 300 ) {
+function webcare_site_limit_full( $key = 'webcare_rl_site', $max = 120 ) {
     $state = get_transient( $key );
     return is_array( $state ) && isset( $state['n'], $state['t'] )
         && ( time() - (int) $state['t'] ) < HOUR_IN_SECONDS
         && (int) $state['n'] >= $max;
 }
 
-// Per-visitor brake (enquiries by default: at most 30 counted events per visitor per 10 minutes).
+// Per-visitor brake (enquiries by default: at most 6 counted events per visitor per 10 minutes).
 // Returns true if this visitor is over the limit (and should not be counted).
-function webcare_over_rate_limit( $visitor_hash, $prefix = 'webcare_rl_', $max = 30 ) {
+function webcare_over_rate_limit( $visitor_hash, $prefix = 'webcare_rl_', $max = 6 ) {
     return webcare_window_limit_reached( $prefix . $visitor_hash, $max, 10 * MINUTE_IN_SECONDS );
 }
 
@@ -501,7 +501,7 @@ function webcare_register_event_route() {
                 // a nonce either: pages are cached (Breeze, Varnish), so a nonce printed into a
                 // page would be stale by the time a visitor clicks. Instead the request is
                 // limited to our own site, to real browsers, to five fixed event types, and to
-                // set allowances: enquiry clicks 30 per visitor per 10 minutes and 300 per hour for
+                // set allowances: enquiry clicks 6 per visitor per 10 minutes and 120 per hour for
                 // the whole site; page views (a separate allowance) 120 and 5000. The worst a fake
                 // request can do is add to a total.
                 'permission_callback' => '__return_true',

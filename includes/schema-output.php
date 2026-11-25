@@ -21,9 +21,6 @@ function webcare_business_types() {
     return [
         'MedicalClinic'           => __( 'Clinic (osteopathy, chiropractic, multi-therapy)', 'webcare' ),
         'Physiotherapy'           => __( 'Physiotherapy', 'webcare' ),
-        'Physician'               => __( 'Doctor / GP / medical practice', 'webcare' ),
-        'Dentist'                 => __( 'Dentist', 'webcare' ),
-        'Optician'                => __( 'Optician', 'webcare' ),
         'HealthAndBeautyBusiness' => __( 'Health & beauty / wellbeing', 'webcare' ),
         'ProfessionalService'     => __( 'Professional service', 'webcare' ),
         'LocalBusiness'           => __( 'Other local business', 'webcare' ),
@@ -357,14 +354,14 @@ function webcare_business_status() {
         return [ 'warning', __( 'Not published: switched off on this site.', 'webcare' ) ];
     }
     if ( 'yoast_local' === $route ) {
-        return [ 'warning', __( 'Not published: Yoast Local SEO is active and handles this — ask APM.', 'webcare' ) ];
+        return [ 'warning', __( 'Not published: Yoast Local SEO is active and handles this. Ask APM.', 'webcare' ) ];
     }
     if ( 'other_seo' === $route ) {
         return [
             'warning',
             sprintf(
                 /* translators: %s: name of an SEO plugin */
-                __( 'Not published: %s is active and handles this — ask APM.', 'webcare' ),
+                __( 'Not published: %s is active and handles this. Ask APM.', 'webcare' ),
                 webcare_other_seo_plugin_name()
             ),
         ];

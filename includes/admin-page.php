@@ -40,17 +40,17 @@ function webcare_enqueue_assets( $hook ) {
 function webcare_messages() {
     $support = webcare_get_support_email();
     return [
-        'sent'         => [ 'success', __( 'Thanks — your request has been sent. We\'ll email you a confirmation shortly.', 'webcare' ) ],
-        'invalid'      => [ 'error', __( 'Please check the form — your name, a valid email address and a description of the change are all needed.', 'webcare' ) ],
+        'sent'         => [ 'success', __( 'Thanks, your request has been sent. We\'ll email you a confirmation shortly.', 'webcare' ) ],
+        'invalid'      => [ 'error', __( 'Please check the form: your name, a valid email address and a description of the change are all needed.', 'webcare' ) ],
         'too_long'     => [ 'error', __( 'Sorry, something you typed was too long. Please shorten it and try again.', 'webcare' ) ],
         'rate_limited' => [ 'error', __( 'Please wait a minute before sending another request.', 'webcare' ) ],
-        'business_saved'       => [ 'success', __( 'Thanks — your business details have been saved. Changes can take a few minutes to appear because of page caching.', 'webcare' ) ],
+        'business_saved'       => [ 'success', __( 'Thanks, your business details have been saved. Changes can take a few minutes to appear because of page caching.', 'webcare' ) ],
         'business_saved_hours' => [ 'warning', __( 'Your business details have been saved, but some opening times were not valid (or closing was not after opening) and have been left out. Please check the opening hours below.', 'webcare' ) ],
-        'business_saved_blank_days' => [ 'warning', __( 'Saved — note: days left blank will be shown to Google as closed.', 'webcare' ) ],
+        'business_saved_blank_days' => [ 'warning', __( 'Saved. Days left blank will be shown to Google as closed.', 'webcare' ) ],
         'business_saved_booking' => [ 'warning', __( 'Your business details have been saved, but the online booking link could not be used and was left out. It needs to be the web address of a booking page, for example https://yourclinic.cliniko.com or yourwebsite.co.uk/book.', 'webcare' ) ],
         'business_invalid'     => [ 'error', __( 'Nothing was saved. Please check the business type and email address, then try again.', 'webcare' ) ],
         'key_renewed'  => [ 'success', __( 'A new connection key has been created. The old key has stopped working, so please give the new key to APM.', 'webcare' ) ],
-        'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet — please contact us directly.', 'webcare' ) ],
+        'not_setup'    => [ 'error', __( 'Online requests aren\'t set up yet. Please contact us directly.', 'webcare' ) ],
         'update_ring_saved'   => [ 'success', __( 'Update settings saved.', 'webcare' ) ],
         'update_ring_invalid' => [ 'error', __( 'Please choose Test site or Ordinary site.', 'webcare' ) ],
         'email_test_sent'         => [ 'success', __( 'Test email sent to your account\'s email address. Please check your inbox (and spam or junk folder) in the next few minutes. If it hasn\'t arrived within 15 minutes, please let us know.', 'webcare' ) ],
@@ -119,7 +119,7 @@ function webcare_render_page() {
 
         <div class="webcare-card">
             <h2><?php echo esc_html__( 'Business details for Google & AI', 'webcare' ); ?></h2>
-            <p><?php echo esc_html__( 'Help Google & AI find you — check your business details.', 'webcare' ); ?></p>
+            <p><?php echo esc_html__( 'Help Google & AI find you. Check your business details.', 'webcare' ); ?></p>
             <p><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=webcare-business' ) ); ?>"><?php echo esc_html__( 'Check your business details', 'webcare' ); ?></a></p>
         </div>
 
@@ -231,7 +231,7 @@ function webcare_render_activity_section() {
         webcare_render_enquiry_section();
     }
 
-    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'These figures are anonymous totals. No cookies and nothing stored on visitors\' devices; no names or contact details. We keep monthly totals and a list of your most-viewed page addresses. To limit spam, a one-way scrambled code based on the visitor\'s connection is kept briefly (normally 10 minutes) and then deleted. If your privacy statement lists what you measure, you may like to add: "anonymous counts of visits and page views, and of clicks on phone, email and booking links".', 'webcare' ) . '</p>';
+    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'Webcare keeps anonymous totals and the most-viewed page addresses. It sets no cookies and stores only an opt-out choice in the browser. To limit spam, it normally keeps a scrambled code based on the connection address for 10 minutes. WordPress normally clears expired codes within a day. Suggested privacy statement: "We count visits, page views and clicks on phone, email and booking links. You can opt out on this page." Add [webcare_optout] to your privacy page.', 'webcare' ) . '</p>';
 }
 
 // Part one: visitors.
@@ -266,12 +266,12 @@ function webcare_render_visitor_section() {
             <tr>
                 <th scope="row"><?php echo esc_html__( 'Visits', 'webcare' ); ?></th>
                 <td><?php echo esc_html( number_format_i18n( $this_v['visits'] ) ); ?></td>
-                <td><?php echo $last_none ? '&mdash;' : esc_html( number_format_i18n( $last_v['visits'] ) ); ?></td>
+                <td><?php echo $last_none ? esc_html__( 'N/A', 'webcare' ) : esc_html( number_format_i18n( $last_v['visits'] ) ); ?></td>
             </tr>
             <tr>
                 <th scope="row"><?php echo esc_html__( 'Page views', 'webcare' ); ?></th>
                 <td><?php echo esc_html( number_format_i18n( $this_v['views'] ) ); ?></td>
-                <td><?php echo $last_none ? '&mdash;' : esc_html( number_format_i18n( $last_v['views'] ) ); ?></td>
+                <td><?php echo $last_none ? esc_html__( 'N/A', 'webcare' ) : esc_html( number_format_i18n( $last_v['views'] ) ); ?></td>
             </tr>
         </tbody>
     </table>
@@ -304,7 +304,7 @@ function webcare_render_visitor_section() {
         } else {
             echo '<ol class="webcare-top-pages">';
             foreach ( $top as $path => $views ) {
-                echo '<li><code>' . esc_html( webcare_readable_path( $path ) ) . '</code> &ndash; ' . esc_html(
+                echo '<li><code>' . esc_html( webcare_readable_path( $path ) ) . '</code>: ' . esc_html(
                     sprintf(
                         /* translators: %s: number of page views */
                         _n( '%s view', '%s views', (int) $views, 'webcare' ),
@@ -388,7 +388,7 @@ function webcare_render_enquiry_section() {
                 <tr>
                     <th scope="row"><?php echo esc_html( $label ); ?></th>
                     <td><?php echo esc_html( number_format_i18n( $this_qtr[ $type ] ) ); ?></td>
-                    <td><?php echo $last_not_tracked ? '&mdash;' : esc_html( number_format_i18n( $last_qtr[ $type ] ) ); ?></td>
+                    <td><?php echo $last_not_tracked ? esc_html__( 'N/A', 'webcare' ) : esc_html( number_format_i18n( $last_qtr[ $type ] ) ); ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -400,12 +400,12 @@ function webcare_render_enquiry_section() {
         echo '<p class="webcare-help">' . esc_html(
             sprintf(
                 /* translators: %s: date counting began */
-                __( 'Counted since tracking started on %s. Clicks show interest — a booking click isn\'t a confirmed appointment.', 'webcare' ),
+                __( 'Counted since tracking started on %s. Clicks show interest. A booking click isn\'t a confirmed appointment.', 'webcare' ),
                 $since
             )
         ) . '</p>';
     } else {
-        echo '<p class="webcare-help">' . esc_html__( 'Clicks show interest — a booking click isn\'t a confirmed appointment.', 'webcare' ) . '</p>';
+        echo '<p class="webcare-help">' . esc_html__( 'Clicks show interest. A booking click isn\'t a confirmed appointment.', 'webcare' ) . '</p>';
     }
 
 }

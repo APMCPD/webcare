@@ -2,9 +2,9 @@
 Contributors: apm
 Tags: support, maintenance, requests
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,9 +64,9 @@ The same card has an "Enquiry actions" table showing, for this quarter and last 
 
 Clicks show interest - a booking click is not a confirmed appointment.
 
-How it works: a tiny script (`assets/webcare-track.js`, no jQuery) listens for link clicks on public pages and sends only the type of click ("phone", "email" or "booking") to `POST /wp-json/webcare/v1/event`. It never delays or blocks the click. It is not loaded in the admin area, the Customizer, the Divi visual builder, or for logged-in Editors/Administrators (so testing doesn't inflate the numbers). No nonce is used on purpose: pages are cached, so a nonce printed into a page would be out of date by the time a visitor clicked. Instead the address ignores unknown event types (400 error), robots and crawlers (no browser name, or a name containing "bot", "crawl", "spider", "headless", a web address, or a known tool such as curl or Lighthouse), requests whose Origin/Referer is another website, anything over 30 events per visitor per 10 minutes, and anything over 300 events per hour across the whole site.
+How it works: a tiny script (`assets/webcare-track.js`, no jQuery) listens for link clicks on public pages and sends only the type of click ("phone", "email" or "booking") to `POST /wp-json/webcare/v1/event`. It never delays or blocks the click. It is not loaded in the admin area, the Customizer, the Divi visual builder, or for logged-in Editors/Administrators (so testing doesn't inflate the numbers). No nonce is used on purpose: pages are cached, so a nonce printed into a page would be out of date by the time a visitor clicked. Instead the address ignores unknown event types (400 error), robots and crawlers (no browser name, or a name containing "bot", "crawl", "spider", "headless", a web address, or a known tool such as curl or Lighthouse), requests whose Origin/Referer is another website, anything over 6 events per visitor per 10 minutes, and anything over 120 events per hour across the whole site.
 
-Privacy (visitor numbers and enquiry actions): these figures are anonymous totals. No cookies and nothing stored on visitors' devices (no localStorage or sessionStorage either); no names or contact details. We keep monthly totals and a list of the most-viewed page addresses. To limit spam, a one-way scrambled code based on the visitor's connection is kept briefly (normally 10 minutes) and then deleted. Suggested wording for the client's privacy statement (Complianz): "anonymous counts of visits and page views, and of clicks on phone, email and booking links". Webcare does not change any Complianz settings.
+Privacy (visitor numbers and enquiry actions): Webcare keeps anonymous totals and the most-viewed page addresses. It sets no cookies and stores only an opt-out choice in the browser. To limit spam, it normally keeps a scrambled code based on the connection address for 10 minutes. WordPress normally clears expired codes within a day. Add [webcare_optout] to the privacy page. Suggested wording: "We count visits, page views and clicks on phone, email and booking links. You can opt out on this page." Webcare does not change any Complianz settings.
 
 Switching it off on one site: add `add_filter( 'webcare_track_enquiries', '__return_false' );` to that site's code. Clicks and form sends are no longer counted and the Enquiry actions table is hidden. The script is only left out of pages if visitor counting (`webcare_track_visits`) is switched off too, and if both are off the card says tracking is switched off.
 
@@ -143,6 +143,9 @@ Sites running 1.9.0 or later get releases on two schedules. Test sites install a
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.9.1 =
+* Visitors can opt out using [webcare_optout], Global Privacy Control or a Complianz statistics refusal. Clearer privacy wording, tighter spam limits and removal of the Doctor, Dentist and Optician business types. Tested up to WordPress 7.1.
 
 = 1.9.0 =
 * Staged updates: test sites get new versions at their next update check; other sites wait 3 days, so a problem can be caught before it reaches every client. Administrators choose on the Webcare page.

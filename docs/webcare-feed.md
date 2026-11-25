@@ -198,7 +198,7 @@ Notes for the app:
 ## Other things that are stored
 
 - `webcare_feed_last_fetch` (not autoloaded): unix time of the last successful fetch. Written at most once an hour. Shown as "Last fetched by APM" in the card.
-- A temporary record (transient `webcare_rf_<20 character one-way code of the visitor's connection>`, kept up to 10 minutes) counts wrong attempts. The real address is never stored.
+- A temporary record (transient `webcare_rf_<20 character one-way code of the visitor's connection>`, normally kept for 10 minutes, with expired records normally cleared within a day) counts wrong attempts. The real address is never stored.
 
 ## Switching it off
 

@@ -9,7 +9,7 @@
  * the host name of the website the visitor came from. Reloads and back/forward are not counted.
  * The only part of the visitor's address that is ever read is utm_source, and only to spot AI
  * assistants (ChatGPT and similar).
- * No cookies and nothing is stored on the visitor's device. Totals are added up on the server.
+ * No cookies are written. Only an opt-out preference is stored on the device. Totals are added up on the server.
  *
  * Settings come from the page as window.webcareTrack:
  *   endpoint - the address to send the count to
@@ -91,6 +91,23 @@
 
     // "extra" is an optional object of more text fields (used by page views: path and ref).
     function send(endpoint, type, extra) {
+        // Visitors who object are not counted (each check on its own, so one that can't be read,
+        // such as blocked browser storage, doesn't stop the others or the count).
+        try {
+            if (navigator.globalPrivacyControl === true) {
+                return;
+            }
+        } catch (e) {}
+        try {
+            if (window.localStorage.getItem('webcare_optout') === '1') {
+                return;
+            }
+        } catch (e) {}
+        try {
+            if (/(?:^|;\s*)cmplz_statistics=deny(?:;|$)/.test(document.cookie)) {
+                return;
+            }
+        } catch (e) {}
         var data = new FormData();
         data.append('type', type);
         if (extra) {

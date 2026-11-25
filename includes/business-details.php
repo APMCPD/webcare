@@ -345,7 +345,7 @@ function webcare_render_business_page() {
         <div class="webcare-card">
             <h2><?php echo esc_html__( 'Help Google and AI find you', 'webcare' ); ?></h2>
             <p><?php echo esc_html__( 'These details are published invisibly in your website\'s code, so Google and AI assistants (ChatGPT, Claude, Google\'s AI answers) can read your phone number, address, opening hours and services accurately.', 'webcare' ); ?></p>
-            <p><?php echo esc_html__( 'They don\'t change what visitors see. If your opening hours are shown on a page, that text still needs updating separately — use "Request a change" on the Webcare Connect page.', 'webcare' ); ?></p>
+            <p><?php echo esc_html__( 'They don\'t change what visitors see. If your opening hours are shown on a page, that text still needs updating separately. Use "Request a change" on the Webcare Connect page.', 'webcare' ); ?></p>
             <p><?php echo esc_html__( 'After you save, changes can take a few minutes to appear because of page caching.', 'webcare' ); ?></p>
             <div class="notice notice-<?php echo esc_attr( $status[0] ); ?> inline"><p><strong><?php echo esc_html__( 'Status:', 'webcare' ); ?></strong> <?php echo esc_html( $status[1] ); ?></p></div>
         </div>
@@ -360,8 +360,12 @@ function webcare_render_business_page() {
                 <div class="webcare-field">
                     <label for="webcare-biz-type"><?php echo esc_html__( 'Type of business', 'webcare' ); ?></label>
                     <select id="webcare-biz-type" name="webcare_biz[type]">
-                        <?php foreach ( webcare_business_types() as $type_key => $type_label ) : ?>
-                            <option value="<?php echo esc_attr( $type_key ); ?>" <?php selected( $text( 'type' ), $type_key ); ?>><?php echo esc_html( $type_label ); ?></option>
+                        <?php
+                        $types = webcare_business_types();
+                        $saved_type = $text( 'type' );
+                        $selected_type = isset( $types[ $saved_type ] ) ? $saved_type : 'LocalBusiness';
+                        foreach ( $types as $type_key => $type_label ) : ?>
+                            <option value="<?php echo esc_attr( $type_key ); ?>" <?php selected( $selected_type, $type_key ); ?>><?php echo esc_html( $type_label ); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -373,7 +377,7 @@ function webcare_render_business_page() {
                     $text( 'name' ),
                     [
                         'placeholder' => get_bloginfo( 'name' ),
-                        'help'        => __( 'Please type it in full — this must be filled in for your details to be published. This replaces the organisation name set in Yoast for Google and AI; your Yoast name is kept as an alternative name.', 'webcare' ),
+                        'help'        => __( 'Please type it in full: this must be filled in for your details to be published. This replaces the organisation name set in Yoast for Google and AI; your Yoast name is kept as an alternative name.', 'webcare' ),
                     ]
                 );
                 ?>

@@ -147,7 +147,7 @@ function webcare_render_summary_tiles( $visits_on, $clicks_on ) {
     echo '<div class="webcare-tiles">';
     foreach ( $tiles as $tile ) {
         // An empty value means "nothing to show yet" and is drawn as a dash.
-        $value = ( '' === $tile[1] ) ? '&mdash;' : esc_html( $tile[1] );
+        $value = ( '' === $tile[1] ) ? esc_html__( 'N/A', 'webcare' ) : esc_html( $tile[1] );
         echo '<div class="webcare-tile"><div class="webcare-tile-label">' . esc_html( $tile[0] ) . '</div>'
             . '<div class="webcare-tile-value">' . $value . '</div>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped (or a fixed entity) just above.
             . '<div class="webcare-tile-note">' . esc_html( $tile[2] ) . '</div></div>';
@@ -219,7 +219,7 @@ function webcare_render_month_bars( $rows, $field, $before_field, $title, $class
         $value  = $row[ $field ];
         $height = $before ? 0 : webcare_bar_percent( $value, $max );
         echo '<div class="webcare-column' . ( $row['current'] ? ' is-current' : '' ) . '">';
-        echo '<span class="webcare-column-value" aria-hidden="true">' . ( $before ? '&ndash;' : esc_html( number_format_i18n( $value ) ) ) . '</span>';
+        echo '<span class="webcare-column-value" aria-hidden="true">' . ( $before ? esc_html__( 'N/A', 'webcare' ) : esc_html( number_format_i18n( $value ) ) ) . '</span>';
         echo '<span class="webcare-column-track" aria-hidden="true"><span class="webcare-column-bar ' . esc_attr( $class ) . '" style="height:' . esc_attr( (string) $height ) . '%"></span></span>';
         echo '<span class="webcare-column-label" aria-hidden="true">' . esc_html( $row['label'] ) . '</span>';
         echo '</div>';
@@ -316,7 +316,7 @@ function webcare_setup_items( $details = null ) {
     $clicks_on = function_exists( 'webcare_tracking_enabled' ) && webcare_tracking_enabled();
     $items[]   = ( $visits_on && $clicks_on )
         ? [ true, __( 'Visit and enquiry counting is on', 'webcare' ) ]
-        : [ false, __( 'Visit or enquiry counting is switched off on this website — ask APM if that is not intended', 'webcare' ) ];
+        : [ false, __( 'Visit or enquiry counting is switched off on this website. Ask APM if that is not intended', 'webcare' ) ];
 
     $test = function_exists( 'webcare_email_get_last_test' ) ? webcare_email_get_last_test() : [];
     if ( empty( $test ) ) {
@@ -330,7 +330,7 @@ function webcare_setup_items( $details = null ) {
     $feed_on = function_exists( 'webcare_report_feed_enabled' ) && webcare_report_feed_enabled();
     $last    = get_option( 'webcare_feed_last_fetch', 0 );
     if ( ! $feed_on ) {
-        $items[] = [ false, __( 'The connection to APM is switched off on this website — ask APM if that is not intended', 'webcare' ) ];
+        $items[] = [ false, __( 'The connection to APM is switched off on this website. Ask APM if that is not intended', 'webcare' ) ];
     } elseif ( is_numeric( $last ) && (int) $last > 0 ) {
         $items[] = [ true, sprintf( /* translators: %s: date */ __( 'Connected to APM (figures last fetched %s)', 'webcare' ), webcare_email_time_text( (int) $last ) ) ];
     } else {

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Webcare Connect
  * Description: Connects this website to the APM Webcare service: your service details, website health, business details and change requests in one place.
- * Version: 1.9.0
+ * Version: 1.9.1
  * Author: APM
  * License: GPL-2.0+
  * Text Domain: webcare
@@ -10,6 +10,7 @@
  * Requires at least: 5.8
  *
  * Changelog:
+ * 1.9.1 - Visitors can opt out using [webcare_optout], Global Privacy Control or a Complianz statistics refusal. Clearer privacy wording, tighter spam limits and removal of the Doctor, Dentist and Optician business types. Tested up to WordPress 7.1.
  * 1.9.0 - Staged updates: test sites get new versions at their next update check; other sites wait 3 days, so a problem can be
  *         caught before it reaches every client. Administrators choose on the Webcare page. Updates now come only from published releases.
  * 1.8.0 - Reach sends website-approved reviews with names as Google gives them. The shortcode hides the entire feed if the last update is missing or more than 30 days old.
@@ -60,7 +61,7 @@ if ( defined( 'WEBCARE_VERSION' ) ) {
 
 // IMPORTANT: this number must always match the "Version:" line in the header above.
 // Bump both together whenever you release an update.
-define( 'WEBCARE_VERSION', '1.9.0' );
+define( 'WEBCARE_VERSION', '1.9.1' );
 
 // Where change requests are emailed by default. A single site can override this by adding
 // define( 'WEBCARE_SUPPORT_EMAIL', '...' ); to its wp-config.php (optional).
@@ -134,3 +135,53 @@ add_filter( 'rest_post_dispatch', 'webcare_feed_no_store', 10, 3 );
 // - Switch off on one site with: add_filter( 'webcare_reviews_endpoint', '__return_false' );
 add_action( 'rest_api_init', 'webcare_register_reviews_route' );
 add_shortcode( 'webcare_reviews', 'webcare_reviews_shortcode' );
+add_shortcode( 'webcare_optout', 'webcare_optout_shortcode' );
+
+function webcare_optout_shortcode() {
+    try {
+        ob_start();
+        ?>
+        <div class="webcare-optout">
+            <span aria-live="polite"><?php echo esc_html__( 'This website counts visits anonymously to help improve it. You can switch this off for this browser.', 'webcare' ); ?></span>
+            <button type="button" hidden><?php echo esc_html__( 'Switch off counting', 'webcare' ); ?></button>
+            <script>
+            (function () {
+                try {
+                    var block = document.currentScript.parentNode;
+                    var status = block.querySelector('span');
+                    var button = block.querySelector('button');
+                    function update(toggle) {
+                        try {
+                            var out = localStorage.getItem('webcare_optout') === '1';
+                            if (toggle) {
+                                if (out) {
+                                    localStorage.removeItem('webcare_optout');
+                                } else {
+                                    localStorage.setItem('webcare_optout', '1');
+                                }
+                                out = !out;
+                            }
+                            var refused = navigator.globalPrivacyControl === true || /(?:^|;\s*)cmplz_statistics=deny(?:;|$)/.test(document.cookie);
+                            status.textContent = out || refused ? 'Visit counting is off for this browser.' : 'Visit counting is on for this browser.';
+                            button.textContent = out ? 'Switch counting back on' : 'Switch off counting';
+                            button.hidden = refused;
+                        } catch (e) {
+                            status.textContent = 'This browser is blocking website storage, so a choice cannot be saved here. Turning on the Global Privacy Control setting in your browser also stops the counting.';
+                            button.hidden = true;
+                        }
+                    }
+                    button.addEventListener('click', function () { update(true); });
+                    update(false);
+                } catch (e) {}
+            }());
+            </script>
+        </div>
+        <?php
+        return ob_get_clean();
+    } catch ( Throwable $e ) {
+        if ( ob_get_level() > 0 ) {
+            ob_end_clean();
+        }
+        return '';
+    }
+}
