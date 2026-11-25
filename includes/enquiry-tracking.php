@@ -397,6 +397,15 @@ function webcare_over_rate_limit( $visitor_hash, $prefix = 'webcare_rl_', $max =
  * The browser script (clicks on phone, email and booking links)
  * ---------------------------------------------------------------- */
 
+function webcare_requires_consent() {
+    try {
+        $detected = defined( 'cmplz_version' ) || class_exists( 'COMPLIANZ' ) || function_exists( 'cmplz_has_consent' );
+        return (bool) apply_filters( 'webcare_require_consent', $detected );
+    } catch ( \Throwable $e ) {
+        return false;
+    }
+}
+
 // Loads the small script on public pages only.
 function webcare_enqueue_tracking() {
     try {
@@ -446,6 +455,7 @@ function webcare_enqueue_tracking() {
                     // Error pages and search results pages are never counted as page views.
                     'clicks'   => $clicks,
                     'visits'   => $visits,
+                    'consent'  => webcare_requires_consent(),
                     'is404'    => is_404(),
                     'isSearch' => is_search(),
                     'path'     => $page_path,

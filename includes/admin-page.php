@@ -231,7 +231,11 @@ function webcare_render_activity_section() {
         webcare_render_enquiry_section();
     }
 
-    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'Webcare keeps anonymous totals and the most-viewed page addresses. It sets no cookies and stores only an opt-out choice in the browser. To limit spam, it normally keeps a scrambled code based on the connection address for 10 minutes. WordPress normally clears expired codes within a day. Suggested privacy statement: "We count visits, page views and clicks on phone, email and booking links. You can opt out on this page." Add [webcare_optout] to your privacy page.', 'webcare' ) . '</p>';
+    echo '<p class="webcare-help"><strong>' . esc_html__( 'Privacy:', 'webcare' ) . '</strong> ' . esc_html__( 'Webcare keeps anonymous totals and the most-viewed page addresses. It sets no cookies and stores only an opt-out choice in the browser. To limit spam, it normally keeps a scrambled code based on the connection address for 10 minutes. WordPress normally clears expired codes within a day. Suggested privacy statement: "We count visits, page views and clicks on phone, email and booking links. You can opt out on this page." Add [webcare_optout] to your privacy page.', 'webcare' );
+    if ( webcare_requires_consent() ) {
+        echo ' ' . esc_html__( 'Counting only starts after a visitor accepts statistics cookies in your cookie banner, so the figures cover those visitors only.', 'webcare' );
+    }
+    echo '</p>';
 }
 
 // Part one: visitors.

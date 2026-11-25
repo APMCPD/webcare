@@ -90,7 +90,7 @@
     /* ---- Sending the count ---- */
 
     // "extra" is an optional object of more text fields (used by page views: path and ref).
-    function send(endpoint, type, extra) {
+    function send(config, type, extra) {
         // Visitors who object are not counted (each check on its own, so one that can't be read,
         // such as blocked browser storage, doesn't stop the others or the count).
         try {
@@ -103,11 +103,15 @@
                 return;
             }
         } catch (e) {}
+        if (config.consent === true && !/(?:^|;\s*)cmplz_statistics=allow(?:;|$)/.test(document.cookie)) {
+            return 'pending';
+        }
         try {
             if (/(?:^|;\s*)cmplz_statistics=deny(?:;|$)/.test(document.cookie)) {
                 return;
             }
         } catch (e) {}
+        var endpoint = config.endpoint;
         var data = new FormData();
         data.append('type', type);
         if (extra) {
@@ -212,7 +216,7 @@
         if (utm !== '') {
             fields.utm = utm;
         }
-        send(config.endpoint, 'pageview', fields);
+        return send(config, 'pageview', fields);
     }
 
     // Counts this page load once. The page is not counted again when a visitor goes "back" to it
@@ -230,13 +234,32 @@
             return;
         }
         var done = false;
+        var listening = false;
+        function onConsent(event) {
+            try {
+                if (!done && event.detail && event.detail.category === 'statistics' &&
+                    (event.type === 'cmplz_enable_category' || event.detail.value === 'allow')) {
+                    once();
+                    if (!done) {
+                        window.setTimeout(once, 500);
+                    }
+                }
+            } catch (e) {}
+        }
         function once() {
             if (done) {
                 return;
             }
             done = true;
             try {
-                sendPageview(config);
+                if (sendPageview(config) === 'pending') {
+                    done = false;
+                    if (!listening) {
+                        listening = true;
+                        document.addEventListener('cmplz_status_change', onConsent);
+                        document.addEventListener('cmplz_enable_category', onConsent);
+                    }
+                }
             } catch (e) {
                 // Never let counting cause a problem for the visitor.
             }
@@ -318,7 +341,7 @@
                 lastType = type;
                 lastTime = now;
 
-                send(config.endpoint, type);
+                send(config, type);
             } catch (e) {
                 // Never let counting cause a problem for the visitor.
             }

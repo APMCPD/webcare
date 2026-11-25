@@ -4,7 +4,7 @@ Tags: support, maintenance, requests
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -143,6 +143,9 @@ Sites running 1.9.0 or later get releases on two schedules. Test sites install a
 WARNING: if the tag does not exactly match the version number inside the plugin (for example the tag says v1.0.2 but the plugin still says 1.0.1), sites will keep offering the same update over and over again.
 
 == Changelog ==
+
+= 1.9.2 =
+* On sites with the Complianz cookie banner, visits and enquiry clicks are only counted after the visitor accepts statistics cookies.
 
 = 1.9.1 =
 * Visitors can opt out using [webcare_optout], Global Privacy Control or a Complianz statistics refusal. Clearer privacy wording, tighter spam limits and removal of the Doctor, Dentist and Optician business types. Tested up to WordPress 7.1.
